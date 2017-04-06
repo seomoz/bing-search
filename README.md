@@ -31,7 +31,7 @@ Install
 -------
 
 ```bash
-$ npm install bing.search --save
+$ npm install git://github.com/seomoz/bing-search.git --save 
 ```
 
 Usage
