@@ -6,13 +6,13 @@ url = require 'url'
 
 markets = require './markets'
 
-BING_SEARCH_ENDPOINT = 'https://api.datamarket.azure.com/Bing/Search'
+BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
   @SOURCES = ['web', 'image', 'video', 'news', 'spell', 'relatedsearch']
   @PAGE_SIZE = 50
 
-  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
+  constructor: (@accountKeys, @parallel = 10, @useGzip = true) ->
 
   requestOptions: (options) ->
     reqOptions =
@@ -64,12 +64,10 @@ class Search
 
   search: (vertical, options, callback) ->
     requestOptions =
-      uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}"
-      qs: _.extend @requestOptions(options),
-        $format: 'json'
-      auth:
-        user: @accountKey
-        pass: @accountKey
+      uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}/search"
+      qs: @requestOptions(options),
+      headers:
+        'Ocp-Apim-Subscription-Key': @accountKeys[vertical]
       json: true
       gzip: @useGzip
 
