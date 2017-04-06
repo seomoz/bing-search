@@ -18,10 +18,16 @@
     "Video Search",
     "News Search"
   ],
-  "author": {
-    "name": "Dudley Carr",
-    "email": "dudley.carr@gmail.com"
-  },
+  "authors": [
+    {
+      "name": "Dudley Carr",
+      "email": "dudley.carr@gmail.com"
+    },
+    {
+      "name": "David Weiser",
+      "email": "davidann@moz.com"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/dudleycarr/bing-search/issues"
