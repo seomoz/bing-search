@@ -5,7 +5,7 @@
   "main": "lib/search.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dudleycarr/bing-search.git"
+    "url": "https://github.com/seomoz/bing-search.git"
   },
   "keywords": [
     "Bing",
