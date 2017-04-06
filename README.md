@@ -22,6 +22,7 @@ Features
 Getting Started
 ---------------
 
+# TODO(weiser): update to reflect the new v5 version of Bing API.
 1. Sign-up for an account the [Bing Search API](https://datamarket.azure.com/dataset/bing/search) via the Azure Market Place.
 2. Use the [Azure Data Explorer for the Bing Search API](https://datamarket.azure.com/dataset/explore/bing/search) to see the results you can expect returned via the API.
 3. Grab the account key from the Data Explorer.
