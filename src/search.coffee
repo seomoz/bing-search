@@ -188,13 +188,14 @@ class Search
       callback
 
   extractNewsResults: (results) ->
+    # @todo name doesn't exist
+    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#news
     @mapResults results, (entry) ->
-      id: entry.ID
-      title: entry.Title
-      source: entry.Source
-      url: entry.Url
-      description: entry.Description
-      date: new Date entry.Date
+      title: entry.name
+      source: entry.provider
+      url: entry.url
+      description: entry.description
+      date: new Date entry.datePublished
 
   spelling: (query, options, callback) ->
     @verticalSearch 'SpellingSuggestions', _.bind(@extractSpellResults, this),
