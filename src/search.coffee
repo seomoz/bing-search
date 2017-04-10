@@ -23,34 +23,6 @@ class Search
 
     reqOptions
 
-  # Generates a sequence of numbers no larger than the page size which the sum
-  # of the list equal to numResults.
-  generateTops: (numResults, pageSize = Search.PAGE_SIZE) ->
-    tops = [numResults % pageSize] if numResults % pageSize isnt 0
-    tops or= []
-    (pageSize for i in [0...Math.floor(numResults / pageSize)]).concat tops
-
-  # Generate a sequence of offsets as a multiple of page size starting at
-  # skipStart and ending before skipStart + numResults.
-  generateSkips: (numResults, skipStart) ->
-    skips = [skipStart]
-    for count in @generateTops(numResults)[...-1]
-      skips.push skips[skips.length - 1] + count
-    skips
-
-  parallelSearch: (vertical, options, callback) ->
-    opts = _.extend {}, {top: Search.PAGE_SIZE, skip: 0}, options
-
-    # Generate search options for each of the search requests.
-    pairs = _.zip @generateTops(opts.top), @generateSkips(opts.top, opts.skip)
-    requestOptions = _.map pairs, ([top, skip]) ->
-      _.defaults {top, skip}, options
-
-    search = (options, callback) =>
-      @search vertical, options, callback
-
-    async.mapLimit requestOptions, @parallel, search, callback
-
   search: (vertical, options, callback) ->
     requestOptions =
       uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}/search"
@@ -111,16 +83,9 @@ class Search
   verticalSearch: (vertical, verticalResultParser, query, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
-    @parallelSearch vertical, _.extend({}, options, {query}), (err, result) ->
+    @search vertical, _.extend({}, options, {query}), (err, result) ->
       return callback err if err
       callback null, verticalResultParser result
-
-  mapResults: (results, fn) ->
-    _.chain(results)
-      .pluck('value')
-      .flatten()
-      .map fn
-      .value()
 
   web: (query, options, callback) ->
     @verticalSearch 'Web', _.bind(@extractWebResults, this), query, options,
@@ -141,7 +106,7 @@ class Search
   extractImageResults: (results) ->
     # @todo size/type are different
     # https://msdn.microsoft.com/en-us/library/mt707570.aspx#image
-    @mapResults results, (entry) =>
+    _.map results.value, (entry) ->
       id: entry.imageId
       title: entry.name
       url: entry.contentUrl
@@ -151,14 +116,11 @@ class Search
       height: Number entry.height
       size: Number entry.contentSize
       type: entry.encodingFormat
-      thumbnail: @extractThumbnail entry
-
-  extractThumbnail: (entry) ->
-    # @todo size/type don't exist
-    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#image
-    url: entry.thumbnailUrl
-    width: Number entry.thumbnail.width
-    height: Number entry.thumbnail.height
+      thumbnail:
+        # @todo size/type don't exist
+        url: entry.thumbnailUrl
+        width: Number entry.thumbnail.width
+        height: Number entry.thumbnail.height
 
   videos: (query, options, callback) ->
     @verticalSearch 'Videos', _.bind(@extractVideoResults, this), query, options,
@@ -167,14 +129,17 @@ class Search
   extractVideoResults: (results) ->
     # @todo duration is different
     # https://msdn.microsoft.com/en-us/library/mt707570.aspx#video
-    @mapResults results,
-      (entry) =>
+    _.map results.value, (entry) ->
         id: entry.videoId
         title: entry.name
         url: entry.contentUrl
         displayUrl: entry.webSearchUrl
         runtime: entry.duration
-        thumbnail: @extractThumbnail entry
+        thumbnail:
+          # @todo size/type don't exist
+          url: entry.thumbnailUrl
+          width: Number entry.thumbnail.width
+          height: Number entry.thumbnail.height
 
   news: (query, options, callback) ->
     @verticalSearch 'News', _.bind(@extractNewsResults, this), query, options,
@@ -183,7 +148,7 @@ class Search
   extractNewsResults: (results) ->
     # @todo name doesn't exist
     # https://msdn.microsoft.com/en-us/library/mt707570.aspx#news
-    @mapResults results, (entry) ->
+    _.map results.value, (entry) ->
       title: entry.name
       source: entry.provider
       url: entry.url
