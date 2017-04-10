@@ -16,7 +16,7 @@ class Search
 
   requestOptions: (options) ->
     reqOptions =
-      Query: @quoted options.query
+      q: @quoted options.query
       $top: options.top or 10
       $skip: options.skip or 0
 
