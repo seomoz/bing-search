@@ -26,6 +26,10 @@
     {
       "name": "David Weiser",
       "email": "davidann@moz.com"
+    },
+    {
+      "name": "Sam Sullivan",
+      "email": "sams@moz.com"
     }
   ],
   "license": "MIT",
