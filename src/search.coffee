@@ -168,17 +168,19 @@ class Search
     height: Number entry.thumbnail.height
 
   videos: (query, options, callback) ->
-    @verticalSearch 'Video', _.bind(@extractVideoResults, this), query, options,
+    @verticalSearch 'Videos', _.bind(@extractVideoResults, this), query, options,
       callback
 
   extractVideoResults: (results) ->
+    # @todo duration is different
+    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#video
     @mapResults results,
       (entry) =>
-        id: entry.ID
-        title: entry.Title
-        url: entry.MediaUrl
-        displayUrl: entry.DisplayUrl
-        runtime: Number entry.RunTime
+        id: entry.videoId
+        title: entry.name
+        url: entry.contentUrl
+        displayUrl: entry.webSearchUrl
+        runtime: entry.duration
         thumbnail: @extractThumbnail entry
 
   news: (query, options, callback) ->
