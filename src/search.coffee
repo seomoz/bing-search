@@ -142,28 +142,30 @@ class Search
       url: Url
 
   images: (query, options, callback) ->
-    @verticalSearch 'Image', _.bind(@extractImageResults, this), query, options,
+    @verticalSearch 'Images', _.bind(@extractImageResults, this), query, options,
       callback
 
   extractImageResults: (results) ->
+    # @todo size/type are different
+    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#image
     @mapResults results, (entry) =>
-      id: entry.ID
-      title: entry.Title
-      url: entry.MediaUrl
-      sourceUrl: entry.SourceUrl
-      displayUrl: entry.DisplayUrl
-      width: Number entry.Width
-      height: Number entry.Height
-      size: Number entry.FileSize
-      type: entry.ContentType
+      id: entry.imageId
+      title: entry.name
+      url: entry.contentUrl
+      sourceUrl: entry.hostPageUrl
+      displayUrl: entry.hostPageDisplayUrl
+      width: Number entry.width
+      height: Number entry.height
+      size: Number entry.contentSize
+      type: entry.encodingFormat
       thumbnail: @extractThumbnail entry
 
-  extractThumbnail: ({Thumbnail}) ->
-    url: Thumbnail.MediaUrl
-    type: Thumbnail.ContentType
-    width: Number Thumbnail.Width
-    height: Number Thumbnail.Height
-    size: Number Thumbnail.FileSize
+  extractThumbnail: (entry) ->
+    # @todo size/type don't exist
+    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#image
+    url: entry.thumbnailUrl
+    width: Number entry.thumbnail.width
+    height: Number entry.thumbnail.height
 
   videos: (query, options, callback) ->
     @verticalSearch 'Video', _.bind(@extractVideoResults, this), query, options,
