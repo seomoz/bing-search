@@ -124,8 +124,7 @@ class Search
 
   mapResults: (results, fn) ->
     _.chain(results)
-      .pluck('d')
-      .pluck('results')
+      .pluck('value')
       .flatten()
       .map fn
       .value()
