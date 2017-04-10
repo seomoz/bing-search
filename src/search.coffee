@@ -9,16 +9,16 @@ markets = require './markets'
 BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
-  @SOURCES = ['web', 'image', 'video', 'news', 'spell', 'relatedsearch']
-  @PAGE_SIZE = 50
+  @SOURCES = ['WebPages', 'Images', 'Videos', 'News', 'SpellSuggestions', 'RelatedSearches']
+  @PAGE_SIZE = 150
 
   constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
 
   requestOptions: (options) ->
     reqOptions =
       q: @quoted options.query
-      $top: options.top or 10
-      $skip: options.skip or 0
+      count: Search.PAGE_SIZE
+      offset: 0
     reqOptions.mkt = options.market if options.market in markets
 
     reqOptions
