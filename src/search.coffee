@@ -16,19 +16,12 @@ class Search
 
   requestOptions: (options) ->
     reqOptions =
-      q: @quoted options.query
+      q: options.query
       count: Search.PAGE_SIZE
       offset: 0
     reqOptions.mkt = options.market if options.market in markets
 
     reqOptions
-
-  # Given a list of strings, generates a string wrapped in single quotes with
-  # the list entries separated by a `+`.
-  quoted: (values) ->
-    values = [values] unless _.isArray values
-    values = (v.replace "'", "''" for v in values)
-    "'#{values.join '+'}'"
 
   # Generates a sequence of numbers no larger than the page size which the sum
   # of the list equal to numResults.
