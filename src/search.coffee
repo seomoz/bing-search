@@ -9,7 +9,6 @@ markets = require './markets'
 BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
-  @SOURCES = ['WebPages', 'Images', 'Videos', 'News', 'SpellSuggestions', 'RelatedSearches']
   @PAGE_SIZE = 150
 
   constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
@@ -23,9 +22,14 @@ class Search
 
     reqOptions
 
-  search: (vertical, options, callback) ->
+  search: (options, callback) ->
+    uri = "#{BING_SEARCH_ENDPOINT}/search"
+    if options.endpoint?
+      uri = "#{BING_SEARCH_ENDPOINT}/#{options.endpoint}"
+      options = _.omit options, 'endpoint'
+
     requestOptions =
-      uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}/search"
+      uri: uri
       qs: @requestOptions(options),
       headers:
         'Ocp-Apim-Subscription-Key': @accountKey
@@ -41,66 +45,40 @@ class Search
 
     debug url.format req.uri
 
-  counts: (query, callback) ->
-    getCounts = (options, callback) =>
-      options = _.extend {}, options, {query, sources: Search.SOURCES}
-      @search 'Composite', options, (err, result) =>
-        return callback err if err
-        callback null, @extractCounts result
-
-    # Two requests are needed. The first request is to get an accurate
-    # web results count and the second request is to get an accurate count
-    # for the rest of the verticals.
-    #
-    # The 1,000 value comes from empirical data. It seems that after 600
-    # results, the accuracy gets quite consistent and accurate. I picked 1,000
-    # just to be in the clear. It also doesn't matter if there are fewer than
-    # 1,000 results.
-    async.map [{skip: 1000}, {}], getCounts, (err, results) ->
-      return callback err if err
-      callback null, _.extend results[1], _.pick(results[0], 'web')
-
-  extractCounts: (result) ->
-    keyRe = /(\w+)Total$/
-
-    _.chain(result?.d?.results or [])
-      .first()
-      .pairs()
-      .filter ([key, value]) ->
-        # Eg. WebTotal, ImageTotal, ...
-        keyRe.test key
-      .map ([key, value]) ->
-        # Eg. WebTotal => web
-        key = keyRe.exec(key)[1].toLowerCase()
-        value = Number value
-
-        switch key
-          when 'spellingsuggestions' then ['spelling', value]
-          else [key, value]
-      .object()
-      .value()
-
+  # This modifies the endpoint used for searching to retrieve params specific
+  # to separate verticals (i.e. width/height for images and runtime for videos).
   verticalSearch: (vertical, verticalResultParser, query, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
-    @search vertical, _.extend({}, options, {query}), (err, result) ->
+    options = _.extend({}, options, {query, endpoint: "#{vertical}/search"})
+    @search options, (err, result) ->
       return callback err if err
       callback null, verticalResultParser result
 
+  # This sends the vertical via the responseFilters query param for methods
+  # which don't have specific verticals (i.e. web, spelling, related).
+  filteredSearch: (filter, filterResultParser, query, options, callback) ->
+    [callback, options] = [options, {}] if _.compact(arguments).length is 4
+
+    options = _.extend({}, options, {query, responseFilter: filter})
+    @search options, (err, result) ->
+      return callback err if err
+      callback null, filterResultParser result
+
   web: (query, options, callback) ->
-    @verticalSearch 'Web', _.bind(@extractWebResults, this), query, options,
+    @filteredSearch 'webpages', _.bind(@extractWebResults, this), query, options,
       callback
 
   extractWebResults: (results) ->
-    @mapResults results, ({ID, Title, Description, DisplayUrl, Url}) ->
-      id: ID
-      title: Title
-      description: Description
-      displayUrl: DisplayUrl
-      url: Url
+    _.map results.webPages.value, (entry) ->
+      id: entry.id
+      title: entry.name
+      description: entry.snippet
+      displayUrl: entry.displayUrl
+      url: entry.url
 
   images: (query, options, callback) ->
-    @verticalSearch 'Images', _.bind(@extractImageResults, this), query, options,
+    @verticalSearch 'images', _.bind(@extractImageResults, this), query, options,
       callback
 
   extractImageResults: (results) ->
@@ -123,7 +101,7 @@ class Search
         height: Number entry.thumbnail.height
 
   videos: (query, options, callback) ->
-    @verticalSearch 'Videos', _.bind(@extractVideoResults, this), query, options,
+    @verticalSearch 'videos', _.bind(@extractVideoResults, this), query, options,
       callback
 
   extractVideoResults: (results) ->
@@ -142,7 +120,7 @@ class Search
           height: Number entry.thumbnail.height
 
   news: (query, options, callback) ->
-    @verticalSearch 'News', _.bind(@extractNewsResults, this), query, options,
+    @verticalSearch 'news', _.bind(@extractNewsResults, this), query, options,
       callback
 
   extractNewsResults: (results) ->
