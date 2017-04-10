@@ -12,7 +12,7 @@ class Search
   @SOURCES = ['web', 'image', 'video', 'news', 'spell', 'relatedsearch']
   @PAGE_SIZE = 50
 
-  constructor: (@accountKeys, @parallel = 10, @useGzip = true) ->
+  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
 
   requestOptions: (options) ->
     reqOptions =
@@ -67,7 +67,7 @@ class Search
       uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}/search"
       qs: @requestOptions(options),
       headers:
-        'Ocp-Apim-Subscription-Key': @accountKeys[vertical]
+        'Ocp-Apim-Subscription-Key': @accountKey
       json: true
       gzip: @useGzip
 
