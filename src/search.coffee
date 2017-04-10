@@ -19,12 +19,8 @@ class Search
       q: @quoted options.query
       $top: options.top or 10
       $skip: options.skip or 0
+    reqOptions.mkt = options.market if options.market in markets
 
-    # Filter out unsupported sources
-    sources = (s for s in options.sources or [] when s in Search.SOURCES)
-    reqOptions.Sources = @quoted sources if sources.length
-
-    reqOptions.Market = @quoted(options.market) if options.market in markets
     reqOptions
 
   # Given a list of strings, generates a string wrapped in single quotes with
