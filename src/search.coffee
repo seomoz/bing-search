@@ -9,20 +9,24 @@ markets = require './markets'
 BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
-  # This pagination variable, used for `count` was chosen with empirical data.
+  # The PAGE_SIZE variable, used for `count`, was chosen with empirical data.
   # The documentation states that the maximum results is API specific; but, all
   # of the API references just state that "the actual number delivered may be
   # less than requested." From what I've seen, searches typically return ~30
   # results. If anything, I'd be lowering this number to avoid unknown gaps.
   @PAGE_SIZE = 25
 
-  constructor: (@accountKey, @useGzip = true) ->
+  # The MAX_RESULTS variable, used for the legacy `top` pagination option,
+  # allows for us to return the same default 50 results as v1.0.1 of this lib.
+  @MAX_RESULTS = 50
+
+  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
 
   sanitizeOptions: (options) ->
-    options = _.defaults {
+    options = _.defaults options, {
       count: Search.PAGE_SIZE
       offset: 0
-    }, options
+    }
     options = _.omit options, 'market' if options.market not in markets
 
     options
@@ -50,25 +54,44 @@ class Search
 
     debug url.format req.uri
 
+  # This allows us to execute multiple asynchronous HTTP requests for larger sets.
+  parallelSearch: (responseParser, options, callback) ->
+    allRequestOptions = []
+
+    top = Search.MAX_RESULTS
+    if options.top?
+      top = Number options.top
+      options = _.omit options, 'top'
+
+    allRequestOptions.push _.defaults {
+        count: Math.min Search.PAGE_SIZE, top - offset
+        offset
+    }, options for offset in [0...top] by Search.PAGE_SIZE
+
+    async.mapLimit allRequestOptions, @parallel, _.bind(@search, this),
+      (err, responses) ->
+        callback err if err?
+
+        results = []
+        responses.forEach (response) ->
+          results = _.union results, responseParser response
+        callback null, results
+
   # This modifies the endpoint used for searching to retrieve params specific
   # to separate verticals (i.e. width/height for images and runtime for videos).
-  verticalSearch: (vertical, resultParser, q, options, callback) ->
+  verticalSearch: (vertical, responseParser, q, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
     options = _.extend({}, options, {q, endpoint: "#{vertical}/search"})
-    @search options, (err, result) ->
-      return callback err if err
-      callback null, resultParser result
+    @parallelSearch responseParser, options, callback
 
   # This sends the vertical via the responseFilters query param for methods
   # which don't have specific verticals (i.e. web, spelling, related).
-  filteredSearch: (responseFilter, resultParser, q, options, callback) ->
+  filteredSearch: (responseFilter, responseParser, q, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
     options = _.extend({}, options, {q, responseFilter})
-    @search options, (err, result) ->
-      return callback err if err
-      callback null, resultParser result
+    @parallelSearch responseParser, options, callback
 
   web: (query, options, callback) ->
     @filteredSearch 'webpages', _.bind(@extractWebResults, this), query, options,
