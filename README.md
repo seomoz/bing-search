@@ -178,11 +178,11 @@ Debugging
 TODOs
 -----
 
-* Implement spelling suggestions, related searches, and composite queries
-* More support for custom options (lat/long, vertical-specific filters, etc.)
-* Improve pagination handling from legacy methods
-* Add debugging tips and tricks
+* ***Implement spelling suggestions, related searches, and composite queries***
+* ***Improve pagination handling from legacy methods***
+* ***More support for custom options (lat/long, vertical-specific filters, etc.)***
 * Better API error messages
+* Add debugging tips and tricks
 * Adjust HTTPS max sockets based on concurrent level
 
 Changes
@@ -192,3 +192,32 @@ Changes
   * Initial support for all Bing Search API sources
 * 5.0.1
   * Revised support for the new Bing API v5
+
+Upgrading
+---------
+
+A number of changes, some breaking, have been made between v1.0.1 and v5.0.1
+to support the new Bing API v5. Here is a summary of said changes:
+* Some response keys have changed values and others were removed completely:
+  * A unique `id` is no longer on any object.
+  * The `size` and `type` keys have been removed from all `thumbnail` objects
+  (both `image`s and `video`s).
+  * `image.size` has changed to "\<size\> \<units\>".
+  * `image.type` no longer includes a namespace (i.e. jpeg, not image/jpeg).
+  * `video.duration` has changed from seconds to a [duration-formatted string](
+  https://en.wikipedia.org/wiki/ISO_8601#Durations).
+* `related()`/`spelling()`/`composite()` are, for now, not included.
+
+Additional notes to keep in mind:
+* Pagination functions differently than before. Instead of `$top`/`$skip` vars,
+`count`/`offset` are now used. We use `25` for our count (which seems to return
+the best results) and then continue to use the `top` option (with the same `50`
+default) to limit the total number of results collected from the API during
+pagination.
+* Composite searching is not available in the capacity it was before.
+Previously, you were able to search multiple verticals at once and retrieve
+relevant results. Now, a comparable request will return a mixed set of results
+depending on what verticals match best (similar to what a human would expect);
+this isn't useful for our purposes. To keep functionality similar, we must make
+parallel requests for our `count()` and [the not-yet implemented] `composite()`
+methods.
