@@ -16,16 +16,16 @@ class Search
   # results. If anything, I'd be lowering this number to avoid unknown gaps.
   @PAGE_SIZE = 25
 
-  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
+  constructor: (@accountKey, @useGzip = true) ->
 
-  requestOptions: (options) ->
-    reqOptions =
-      q: options.query
+  sanitizeOptions: (options) ->
+    options = _.defaults {
       count: Search.PAGE_SIZE
       offset: 0
-    reqOptions.mkt = options.market if options.market in markets
+    }, options
+    options = _.omit options, 'market' if options.market not in markets
 
-    reqOptions
+    options
 
   search: (options, callback) ->
     uri = "#{BING_SEARCH_ENDPOINT}/search"
@@ -35,7 +35,7 @@ class Search
 
     requestOptions =
       uri: uri
-      qs: @requestOptions(options),
+      qs: @sanitizeOptions(options),
       headers:
         'Ocp-Apim-Subscription-Key': @accountKey
       json: true
@@ -52,23 +52,23 @@ class Search
 
   # This modifies the endpoint used for searching to retrieve params specific
   # to separate verticals (i.e. width/height for images and runtime for videos).
-  verticalSearch: (vertical, verticalResultParser, query, options, callback) ->
+  verticalSearch: (vertical, resultParser, q, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
-    options = _.extend({}, options, {query, endpoint: "#{vertical}/search"})
+    options = _.extend({}, options, {q, endpoint: "#{vertical}/search"})
     @search options, (err, result) ->
       return callback err if err
-      callback null, verticalResultParser result
+      callback null, resultParser result
 
   # This sends the vertical via the responseFilters query param for methods
   # which don't have specific verticals (i.e. web, spelling, related).
-  filteredSearch: (filter, filterResultParser, query, options, callback) ->
+  filteredSearch: (responseFilter, resultParser, q, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 4
 
-    options = _.extend({}, options, {query, responseFilter: filter})
+    options = _.extend({}, options, {q, responseFilter})
     @search options, (err, result) ->
       return callback err if err
-      callback null, filterResultParser result
+      callback null, resultParser result
 
   web: (query, options, callback) ->
     @filteredSearch 'webpages', _.bind(@extractWebResults, this), query, options,
