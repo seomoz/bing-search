@@ -20,7 +20,7 @@ class Search
   # allows for us to return the same default 50 results as v1.0.1 of this lib.
   @MAX_RESULTS = 50
 
-  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
+  constructor: (@accountKey, @parallelLimit = 10, @useGzip = true) ->
 
   _sanitizeOptions: (options) ->
     # Default pagination.
@@ -29,17 +29,14 @@ class Search
       offset: 0
     }
 
-    # Allow for query or q.
-    if options.query?
-      options.q = options.query
-      options = _.omit options, 'q'
-
-    # Validate market.
-    options = _.omit options, 'market' if options.market not in markets
+    # Validate market; send as `mkt`.
+    if options.market?
+      options.mkt = options.market if option.market in markets
+      options = _.omit options, 'market'
 
     options
 
-  search: (options, callback) ->
+  _executeSearch: (options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 1
 
     uri = "#{BING_SEARCH_ENDPOINT}/search"
@@ -85,7 +82,7 @@ class Search
       offset
     }, options for offset in [0...top] by Search.PAGE_SIZE
 
-    async.mapLimit allRequestOptions, @parallel, _.bind(@search, this),
+    async.mapLimit allRequestOptions, @parallelLimit, _.bind(@_executeSearch, this),
       (err, responses) ->
         callback err if err?
 
@@ -115,7 +112,7 @@ class Search
     search = (source, callback) =>
       methods[source] query, options, callback
 
-    async.mapLimit sources, @parallel, search,
+    async.mapLimit sources, @parallelLimit, search,
       (err, responses) ->
         callback err if err?
 
@@ -154,8 +151,8 @@ class Search
     _.map data.results, (result) ->
       title: result.name
       description: result.snippet
-      displayUrl: result.displayUrl
       url: result.url
+      displayUrl: result.displayUrl
 
   _rawImages: (query, options, callback) ->
     @_verticalSearch 'images', query, options, callback
