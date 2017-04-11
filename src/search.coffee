@@ -9,7 +9,12 @@ markets = require './markets'
 BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
-  @PAGE_SIZE = 150
+  # This pagination variable, used for `count` was chosen with empirical data.
+  # The documentation states that the maximum results is API specific; but, all
+  # of the API references just state that "the actual number delivered may be
+  # less than requested." From what I've seen, searches typically return ~30
+  # results. If anything, I'd be lowering this number to avoid unknown gaps.
+  @PAGE_SIZE = 25
 
   constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
 
