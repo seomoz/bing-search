@@ -120,7 +120,7 @@ class Search
       displayUrl: entry.hostPageDisplayUrl
       width: Number entry.width
       height: Number entry.height
-      size: Number entry.contentSize
+      size: entry.contentSize
       type: entry.encodingFormat
       thumbnail:
         # @todo size/type don't exist
