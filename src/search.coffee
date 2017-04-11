@@ -80,7 +80,8 @@ class Search
     allRequestOptions.push _.defaults {
       count: Math.min Search.PAGE_SIZE, top - offset
       offset
-    }, options for offset in [0...top] by Search.PAGE_SIZE
+    }, options for offset in [(options.offset || 0)...top] by Search.PAGE_SIZE
+    console.log allRequestOptions
 
     async.mapLimit allRequestOptions, @parallelLimit, _.bind(@_executeSearch, this),
       (err, responses) ->
@@ -97,7 +98,7 @@ class Search
 
         callback null, data
 
-  count: (query, options, callback) ->
+  counts: (query, options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 2
 
     sources = ['web', 'images', 'videos', 'news']
@@ -108,11 +109,23 @@ class Search
       news: _.bind @_rawNews, this
     }
 
-    _.extend options, {top: 1}
-    search = (source, callback) =>
-      methods[source] query, options, callback
+    executeSearch = (source, callback) =>
+      # We only need to one result (zero is impossible) from most verticals.
+      # With a web search, however, the `totalEstimatedMatches` needs to be
+      # checked from a higher page for accurate data.
+      #
+      # The 1,000 value comes from empirical data. It seems that after 600
+      # results, the accuracy gets quite consistent and accurate. I picked 1,000
+      # just to be in the clear. It also doesn't matter if there are fewer than
+      # 1,000 results.
+      pagination = {offset: 0, top: 1}
+      if source is 'web'
+        _.each pagination, (value, key) ->
+          pagination[key] += 1000
 
-    async.mapLimit sources, @parallelLimit, search,
+      methods[source] query, (_.defaults pagination, options), callback
+
+    async.mapLimit sources, @parallelLimit, executeSearch,
       (err, responses) ->
         callback err if err?
 
