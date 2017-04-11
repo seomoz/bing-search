@@ -22,40 +22,57 @@ class Search
 
   constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
 
-  sanitizeOptions: (options) ->
+  _sanitizeOptions: (options) ->
+    # Default pagination.
     options = _.defaults options, {
       count: Search.PAGE_SIZE
       offset: 0
     }
+
+    # Allow for query or q.
+    if options.query?
+      options.q = options.query
+      options = _.omit options, 'q'
+
+    # Validate market.
     options = _.omit options, 'market' if options.market not in markets
 
     options
 
   search: (options, callback) ->
+    [callback, options] = [options, {}] if _.compact(arguments).length is 1
+
     uri = "#{BING_SEARCH_ENDPOINT}/search"
     if options.endpoint?
       uri = "#{BING_SEARCH_ENDPOINT}/#{options.endpoint}"
       options = _.omit options, 'endpoint'
+    qs = @_sanitizeOptions(options)
 
-    requestOptions =
-      uri: uri
-      qs: @sanitizeOptions(options),
+    req = request {
+      uri, qs
       headers:
         'Ocp-Apim-Subscription-Key': @accountKey
       json: true
       gzip: @useGzip
-
-    req = request requestOptions, (err, res, body) ->
+    }, (err, res, body) =>
       unless err or res.statusCode is 200
         err or= new Error "Bad Bing API response #{res.statusCode}"
       return callback err if err
 
-      callback null, body
+      callback null, @_parseBody body
 
     debug url.format req.uri
 
-  # This allows us to execute multiple asynchronous HTTP requests for larger sets.
-  parallelSearch: (responseParser, options, callback) ->
+  _parseBody: (body) ->
+    # Filtered searches' data lives within the webPages property.
+    body = body.webPages if body._type is 'SearchResponse'
+
+    {
+      count: body.totalEstimatedMatches,
+      results: body.value
+    }
+
+  _parallelSearch: (options, callback) ->
     allRequestOptions = []
 
     top = Search.MAX_RESULTS
@@ -64,138 +81,152 @@ class Search
       options = _.omit options, 'top'
 
     allRequestOptions.push _.defaults {
-        count: Math.min Search.PAGE_SIZE, top - offset
-        offset
+      count: Math.min Search.PAGE_SIZE, top - offset
+      offset
     }, options for offset in [0...top] by Search.PAGE_SIZE
 
     async.mapLimit allRequestOptions, @parallel, _.bind(@search, this),
       (err, responses) ->
         callback err if err?
 
-        results = []
+        data = {
+          count: 0
+          results: []
+        }
+
         responses.forEach (response) ->
-          results = _.union results, responseParser response
-        callback null, results
+          data.count = response.count
+          data.results = _.union data.results, response.results
+
+        callback null, data
+
+  count: (query, options, callback) ->
+    [callback, options] = [options, {}] if _.compact(arguments).length is 2
+
+    sources = ['web', 'images', 'videos', 'news']
+    methods = {
+      web: _.bind @_rawWeb, this
+      images: _.bind @_rawImages, this
+      videos: _.bind @_rawVideos, this
+      news: _.bind @_rawNews, this
+    }
+
+    _.extend options, {top: 1}
+    search = (source, callback) =>
+      methods[source] query, options, callback
+
+    async.mapLimit sources, @parallel, search,
+      (err, responses) ->
+        callback err if err?
+
+        data = {}
+        data[source] = 0 for source in sources
+
+        responses.forEach (response, i) ->
+          data[sources[i]] = response.count
+
+        callback null, data
 
   # This modifies the endpoint used for searching to retrieve params specific
   # to separate verticals (i.e. width/height for images and runtime for videos).
-  verticalSearch: (vertical, responseParser, q, options, callback) ->
-    [callback, options] = [options, {}] if _.compact(arguments).length is 4
-
+  _verticalSearch: (vertical, q, options, callback) ->
     options = _.extend({}, options, {q, endpoint: "#{vertical}/search"})
-    @parallelSearch responseParser, options, callback
+    @_parallelSearch options, callback
 
   # This sends the vertical via the responseFilters query param for methods
   # which don't have specific verticals (i.e. web, spelling, related).
-  filteredSearch: (responseFilter, responseParser, q, options, callback) ->
-    [callback, options] = [options, {}] if _.compact(arguments).length is 4
-
+  _filteredSearch: (responseFilter, q, options, callback) ->
     options = _.extend({}, options, {q, responseFilter})
-    @parallelSearch responseParser, options, callback
+    @_parallelSearch options, callback
+
+  _rawWeb: (query, options, callback) ->
+    @_filteredSearch 'webpages', query, options, callback
 
   web: (query, options, callback) ->
-    @filteredSearch 'webpages', _.bind(@extractWebResults, this), query, options,
-      callback
+    [callback, options] = [options, {}] if _.compact(arguments).length is 2
 
-  extractWebResults: (results) ->
-    _.map results.webPages.value, (entry) ->
-      id: entry.id
-      title: entry.name
-      description: entry.snippet
-      displayUrl: entry.displayUrl
-      url: entry.url
+    @_rawWeb query, options, (err, data) =>
+      callback err if err?
+      callback null, @_extractWebResults data
+
+  _extractWebResults: (data) ->
+    # @todo no ID equivalent
+    _.map data.results, (result) ->
+      title: result.name
+      description: result.snippet
+      displayUrl: result.displayUrl
+      url: result.url
+
+  _rawImages: (query, options, callback) ->
+    @_verticalSearch 'images', query, options, callback
 
   images: (query, options, callback) ->
-    @verticalSearch 'images', _.bind(@extractImageResults, this), query, options,
-      callback
+    [callback, options] = [options, {}] if _.compact(arguments).length is 2
 
-  extractImageResults: (results) ->
+    @_rawImages query, options, (err, data) =>
+      callback err if err?
+      callback null, @_extractImageResults data
+
+  _extractImageResults: (data) ->
+    # @todo no ID equivalent
     # @todo size/type are different
-    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#image
-    _.map results.value, (entry) ->
-      id: entry.imageId
-      title: entry.name
-      url: entry.contentUrl
-      sourceUrl: entry.hostPageUrl
-      displayUrl: entry.hostPageDisplayUrl
-      width: Number entry.width
-      height: Number entry.height
-      size: entry.contentSize
-      type: entry.encodingFormat
+    _.map data.results, (result) ->
+      title: result.name
+      url: result.contentUrl
+      sourceUrl: result.hostPageUrl
+      displayUrl: result.hostPageDisplayUrl
+      width: Number result.width
+      height: Number result.height
+      size: result.contentSize
+      type: result.encodingFormat
       thumbnail:
         # @todo size/type don't exist
-        url: entry.thumbnailUrl
-        width: Number entry.thumbnail.width
-        height: Number entry.thumbnail.height
+        url: result.thumbnailUrl
+        width: Number result.thumbnail.width
+        height: Number result.thumbnail.height
+
+  _rawVideos: (query, options, callback) ->
+    @_verticalSearch 'videos', query, options, callback
 
   videos: (query, options, callback) ->
-    @verticalSearch 'videos', _.bind(@extractVideoResults, this), query, options,
-      callback
+    [callback, options] = [options, {}] if _.compact(arguments).length is 2
 
-  extractVideoResults: (results) ->
+    @_rawVideos query, options, (err, data) =>
+      callback err if err?
+      callback null, @_extractVideoResults data
+
+  _extractVideoResults: (data) ->
+    # @todo no ID equivalent
     # @todo duration is different
-    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#video
-    _.map results.value, (entry) ->
-        id: entry.videoId
-        title: entry.name
-        url: entry.contentUrl
-        displayUrl: entry.webSearchUrl
-        runtime: entry.duration
-        thumbnail:
-          # @todo size/type don't exist
-          url: entry.thumbnailUrl
-          width: Number entry.thumbnail.width
-          height: Number entry.thumbnail.height
+    _.map data.results, (result) ->
+      title: result.name
+      url: result.contentUrl
+      displayUrl: result.webSearchUrl
+      runtime: result.duration
+      thumbnail:
+        # @todo size/type don't exist
+        url: result.thumbnailUrl
+        width: Number result.thumbnail.width
+        height: Number result.thumbnail.height
+
+  _rawNews: (query, options, callback) ->
+    @_verticalSearch 'news', query, options, callback
 
   news: (query, options, callback) ->
-    @verticalSearch 'news', _.bind(@extractNewsResults, this), query, options,
-      callback
+    [callback, options] = [options, {}] if _.compact(arguments).length is 2
 
-  extractNewsResults: (results) ->
+    @_rawNews query, options, (err, data) =>
+      callback err if err?
+      callback null, @_extractNewsResults data
+
+  _extractNewsResults: (data) ->
+    # @todo no ID equivalent
     # @todo name doesn't exist
-    # https://msdn.microsoft.com/en-us/library/mt707570.aspx#news
-    _.map results.value, (entry) ->
-      title: entry.name
-      source: entry.provider
-      url: entry.url
-      description: entry.description
-      date: new Date entry.datePublished
-
-  spelling: (query, options, callback) ->
-    @verticalSearch 'SpellingSuggestions', _.bind(@extractSpellResults, this),
-      query, options, callback
-
-  extractSpellResults: (results) ->
-    @mapResults results, ({Value}) ->
-      Value
-
-  related: (query, options, callback) ->
-    @verticalSearch 'RelatedSearch', _.bind(@extractRelatedResults, this),
-      query, options, callback
-
-  extractRelatedResults: (results) ->
-    @mapResults results, ({Title, BingUrl}) ->
-      query: Title
-      url: BingUrl
-
-  composite: (query, options, callback) ->
-    [callback, options] = [options, {}] if arguments.length is 2
-    options = _.defaults {}, options, {query, sources: Search.SOURCES}
-
-    @parallelSearch 'Composite', options, (err, results) =>
-      return callback err if err
-
-      convertToSingleSource = (results, source) ->
-        {d: {results: r.d.results[0][source]}} for r in results
-
-      callback null,
-        web: @extractWebResults convertToSingleSource results, 'Web'
-        images: @extractImageResults convertToSingleSource results, 'Image'
-        videos: @extractVideoResults convertToSingleSource results, 'Video'
-        news: @extractNewsResults convertToSingleSource results, 'News'
-        spelling: @extractSpellResults convertToSingleSource results,
-          'SpellingSuggestions'
-        related: @extractRelatedResults convertToSingleSource results,
-          'RelatedSearch'
+    _.map data.results, (result) ->
+      title: result.name
+      source: result.provider
+      url: result.url
+      description: result.description
+      date: new Date result.datePublished
 
 module.exports = Search
