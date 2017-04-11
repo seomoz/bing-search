@@ -179,7 +179,7 @@ TODOs
 -----
 
 * ***Implement spelling suggestions, related searches, and composite queries***
-* ***Improve pagination handling from legacy methods***
+* ***Improve pagination handling from legacy methods (`nextOffsetAddCount`)***
 * ***More support for custom options (lat/long, vertical-specific filters, etc.)***
 * Better API error messages
 * Add debugging tips and tricks
@@ -206,6 +206,12 @@ to support the new Bing API v5. Here is a summary of said changes:
   * `image.type` no longer includes a namespace (i.e. jpeg, not image/jpeg).
   * `video.duration` has changed from seconds to a [duration-formatted string](
   https://en.wikipedia.org/wiki/ISO_8601#Durations).
+* The `count()` method returns different verticals:
+  * `web` -> stayed the same
+  * `image` -> `images`
+  * `video` -> `videos`
+  * `news` -> stayed the same
+  * `spelling` -> deleted
 * `related()`/`spelling()`/`composite()` are, for now, not included.
 
 Additional notes to keep in mind:
