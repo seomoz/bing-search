@@ -98,7 +98,7 @@ class Search
         }
 
         responses.forEach (response) ->
-          data.count = response.count
+          data.count = response.count if response.count?
           data.results = _.union data.results, response.results
 
         callback null, data
