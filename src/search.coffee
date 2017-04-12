@@ -62,18 +62,27 @@ class Search
         err or= new Error "Bad Bing API response #{res.statusCode}"
       return callback err if err
 
-      callback null, @_parseBody body
+      # Filtered searches' data lives within the webPages property.
+      body = body.webPages if body._type is 'SearchResponse'
+      return callback 'Invalid HTTP response body.' if not body?
+
+      # Parse an ID out of result URLs.
+      invalidId = false
+      body.value.forEach (result) ->
+        matches = (result.url || result.hostPageUrl).match /&h=([^&]+)/
+        if not matches?
+          invalidId = true
+          return
+        result.id = matches[1]
+      return callback 'Unable to parse an ID out of result URL.' if invalidId
+
+      # Return search count and results.
+      callback null, {
+        count: body.totalEstimatedMatches,
+        results: body.value
+      }
 
     debug url.format req.uri
-
-  _parseBody: (body) ->
-    # Filtered searches' data lives within the webPages property.
-    body = body.webPages if body._type is 'SearchResponse'
-
-    {
-      count: body.totalEstimatedMatches,
-      results: body.value
-    }
 
   _parallelSearch: (options, callback) ->
     allRequestOptions = []
@@ -97,9 +106,14 @@ class Search
           results: []
         }
 
+        # Avoid duplicates by checking result IDs.
+        existingIds = []
         responses.forEach (response) ->
           data.count = response.count if response.count?
-          data.results = _.union data.results, response.results
+          response.results.forEach (result) ->
+            unless result.id in existingIds
+              data.results.push result
+              existingIds.push result.id
 
         callback null, data
 
@@ -165,8 +179,8 @@ class Search
       callback null, @_extractWebResults data
 
   _extractWebResults: (data) ->
-    # @todo no ID equivalent
     _.map data.results, (result) ->
+      id: result.id
       title: result.name
       description: result.snippet
       url: result.url
@@ -183,9 +197,9 @@ class Search
       callback null, @_extractImageResults data
 
   _extractImageResults: (data) ->
-    # @todo no ID equivalent
     # @todo size/type are different
     _.map data.results, (result) ->
+      id: result.id
       title: result.name
       url: result.contentUrl
       sourceUrl: result.hostPageUrl
@@ -211,9 +225,9 @@ class Search
       callback null, @_extractVideoResults data
 
   _extractVideoResults: (data) ->
-    # @todo no ID equivalent
     # @todo duration is different
     _.map data.results, (result) ->
+      id: result.id
       title: result.name
       url: result.contentUrl
       displayUrl: result.webSearchUrl
@@ -235,9 +249,9 @@ class Search
       callback null, @_extractNewsResults data
 
   _extractNewsResults: (data) ->
-    # @todo no ID equivalent
     # @todo name doesn't exist
     _.map data.results, (result) ->
+      id: result.id
       title: result.name
       source: result.provider
       url: result.url
