@@ -39,8 +39,8 @@ describe 'search', ->
         should.not.exist err
         results.should.eql
           web: 325
-          images: 776
-          videos: 145
+          image: 776
+          video: 145
           news: 112000
         done()
 

@@ -96,8 +96,8 @@ Available methods:
   Format of results to callback:
   ```javascript
   { web: 334,
-    images: 20400,
-    videos: 33400,
+    image: 20400,
+    video: 33400,
     news: 1460 }
   ```
 
@@ -219,12 +219,7 @@ to support the new Bing API v5. Here is a summary of said changes:
   https://en.wikipedia.org/wiki/ISO_8601#Durations).
   * The unique `id` is no longer returned by Bing API, but we still parse this
   out of the URL. The library only relies on this for duplication protection.
-* The `count()` method returns different verticals:
-  * `web` -> stayed the same
-  * `image` -> `images`
-  * `video` -> `videos`
-  * `news` -> stayed the same
-  * `spelling` -> deleted
+* The `count()` method no longer returns a `spelling` property.
 * `related()`/`spelling()`/`composite()` are, for now, not included.
 
 Additional notes to keep in mind:

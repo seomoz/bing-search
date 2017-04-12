@@ -119,12 +119,20 @@ class Search
         callback null, data
 
   counts: (query, options..., callback) ->
-    sources = ['web', 'images', 'videos', 'news']
-    methods =
-      web: _.bind @rawWeb, this
-      images: _.bind @rawImages, this
-      videos: _.bind @rawVideos, this
-      news: _.bind @rawNews, this
+    sources = []
+
+    sources.push
+      key: 'web'
+      method: _.bind @rawWeb, this
+    sources.push
+      key: 'image'
+      method: _.bind @rawImages, this
+    sources.push
+      key: 'video'
+      method: _.bind @rawVideos, this
+    sources.push
+      key: 'news'
+      method: _.bind @rawNews, this
 
     executeSearchForCounts = (source, callback) ->
       ###
@@ -138,21 +146,21 @@ class Search
       1,000 results.
       ###
       pagination = {offset: 0, top: 1}
-      if source is 'web'
+      if source.key is 'web'
         _.each pagination, (value, key) ->
           pagination[key] += 1000
 
-      methods[source] query, _.defaults(pagination, options), callback
+      source.method query, _.defaults(pagination, options), callback
 
     async.mapLimit sources, @parallelLimit, executeSearchForCounts,
       (err, responses) ->
         return callback err if err
 
         data = {}
-        data[source] = 0 for source in sources
+        data[source.key] = 0 for source in sources
 
         responses.forEach (response, i) ->
-          data[sources[i]] = response.estimatedCount
+          data[sources[i].key] = response.estimatedCount
 
         callback null, data
 
