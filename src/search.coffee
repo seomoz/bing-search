@@ -79,7 +79,7 @@ class Search
 
       # Return search count and results.
       callback null, {
-        count: body.totalEstimatedMatches,
+        estimatedCount: body.totalEstimatedMatches,
         results: body.value
       }
 
@@ -103,14 +103,13 @@ class Search
         callback err if err?
 
         data = {
-          count: 0
+          estimatedCount: _.last(responses).estimatedCount
           results: []
         }
 
         # Avoid duplicates by checking result IDs.
         existingIds = []
         responses.forEach (response) ->
-          data.count = response.count if response.count?
           response.results.forEach (result) ->
             unless result.id in existingIds
               data.results.push result
@@ -153,7 +152,7 @@ class Search
         data[source] = 0 for source in sources
 
         responses.forEach (response, i) ->
-          data[sources[i]] = response.count
+          data[sources[i]] = response.estimatedCount
 
         callback null, data
 
