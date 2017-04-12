@@ -27,10 +27,10 @@ describe 'search', ->
 
   describe 'quote', ->
     it 'should put a phrase in quotes', (done) ->
-      search._quote('Moz').should.eql '"Moz"'
+      search.quote('Moz').should.eql '"Moz"'
       done()
     it 'should escape quotes within phrases', (done) ->
-      search._quote('"Moz"').should.eql '"\"Moz\""'
+      search.quote('"Moz"').should.eql '"\"Moz\""'
       done()
 
   describe 'counts', ->
@@ -54,7 +54,8 @@ describe 'search', ->
           'title'
           'description'
           'displayUrl'
-          'url']
+          'url'
+        ]
         done()
     it 'should return 100 results', (done) ->
       search.web 'Moz', {top: 100}, (err, results) ->
