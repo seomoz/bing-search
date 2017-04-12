@@ -215,7 +215,7 @@ to support the new Bing API v5. Here is a summary of said changes:
   (both `image`s and `video`s).
   * `image.size` has changed to "\<size\> \<units\>".
   * `image.type` no longer includes a namespace (i.e. jpeg, not image/jpeg).
-  * `video.duration` has changed from seconds to a [duration-formatted string](
+  * `video.runtime` has changed from seconds to a [duration-formatted string](
   https://en.wikipedia.org/wiki/ISO_8601#Durations).
   * The unique `id` is no longer returned by Bing API, but we still parse this
   out of the URL. The library only relies on this for duplication protection.
