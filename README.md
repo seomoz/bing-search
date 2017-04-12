@@ -103,7 +103,8 @@ Available methods:
 
   Format of results to callback:
   ```javascript
-  [ { title: '...',
+  [ { id: '...',
+      title: '...',
       description: '...',
       url: 'http://...',
       displayUrl: '...' },
@@ -119,7 +120,8 @@ Available methods:
 
   Format of results to callback:
   ```javascript
-  [ { title: '...',
+  [ { id: '...',
+      title: '...',
       url: 'http://...',
       sourceUrl: 'http://...',
       displayUrl: '...',
@@ -143,7 +145,8 @@ Available methods:
 
   Format of results to callback:
   ```javascript
-  [ { title: '...',
+  [ { id: '...',
+      title: '...',
       url: 'http://...',
       displayUrl: '...',
       runtime: 'PT2M50S',
@@ -162,7 +165,8 @@ Available methods:
 
   Format of results to callback:
   ```javascript
-  [ { title: '...',
+  [ { id: '...',
+      title: '...',
       source: '...',
       url: 'http://...',
       description: '...',
@@ -178,9 +182,8 @@ Debugging
 TODOs
 -----
 
-* ***Implement spelling suggestions, related searches, and composite queries***
-* ***Improve pagination handling from legacy methods (`nextOffsetAddCount`)***
-* ***More support for custom options (lat/long, vertical-specific filters, etc.)***
+* Implement spelling suggestions, related searches, and composite queries
+* More support for custom options (lat/long, vertical-specific filters, etc.)
 * Better API error messages
 * Add debugging tips and tricks
 * Adjust HTTPS max sockets based on concurrent level
@@ -199,13 +202,14 @@ Upgrading
 A number of changes, some breaking, have been made between v1.0.1 and v5.0.1
 to support the new Bing API v5. Here is a summary of said changes:
 * Some response keys have changed values and others were removed completely:
-  * A unique `id` is no longer on any object.
   * The `size` and `type` keys have been removed from all `thumbnail` objects
   (both `image`s and `video`s).
   * `image.size` has changed to "\<size\> \<units\>".
   * `image.type` no longer includes a namespace (i.e. jpeg, not image/jpeg).
   * `video.duration` has changed from seconds to a [duration-formatted string](
   https://en.wikipedia.org/wiki/ISO_8601#Durations).
+  * The unique `id` is no longer returned by Bing API, but we still parse this
+  out of the URL. The library only relies on this for duplication protection.
 * The `count()` method returns different verticals:
   * `web` -> stayed the same
   * `image` -> `images`
