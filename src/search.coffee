@@ -35,7 +35,12 @@ class Search
       options.mkt = options.market if option.market in markets
       options = _.omit options, 'market'
 
+    options.q = @_quote options.q
     options
+
+  _quote: (str) ->
+    str = str.replace '"', '\"' # Escape existing quotes.
+    str.replace /^|$/g, '"'      # Quote entire phrase.
 
   _executeSearch: (options, callback) ->
     [callback, options] = [options, {}] if _.compact(arguments).length is 1
