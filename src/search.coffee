@@ -76,6 +76,7 @@ class Search
         if not matches?
           invalidId = true
           return
+
         result.id = matches[1]
       return callback 'Unable to parse an ID out of result URL.' if invalidId
 
