@@ -25,6 +25,14 @@ describe 'search', ->
       out = JSON.stringify nock.recorder.play(), null, 2
       fs.writeFileSync RECORDED_FILE, out
 
+  describe 'quote', ->
+    it 'should put a phrase in quotes', (done) ->
+      search._quote('Moz').should.eql '"Moz"'
+      done()
+    it 'should escape quotes within phrases', (done) ->
+      search._quote('"Moz"').should.eql '"\"Moz\""'
+      done()
+
   describe 'counts', ->
     it 'should return counts for all verticals', (done) ->
       search.counts 'Moz', (err, results) ->
