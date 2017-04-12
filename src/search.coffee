@@ -13,8 +13,9 @@ class Search
   # documentation states that the maximum results is API specific; but, all of
   # the API references just state that "the actual number delivered may be
   # less than requested." From what I've seen, searches typically return ~30
-  # results; however, impartial result sets can occur at any `count > 10`.
-  @PAGE_SIZE = 10
+  # results; however, impartial result sets occur at any `count > 10`. `25` is
+  # a good number for avoiding holes in data and duplicate results across pages.
+  @PAGE_SIZE = 25
 
   # The MAX_RESULTS variable, used for the legacy `top` pagination option,
   # allows for us to return the same default `50` results as v1.0.1 of this
