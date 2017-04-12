@@ -27,38 +27,40 @@ describe 'search', ->
 
   describe 'counts', ->
     it 'should return counts for all verticals', (done) ->
-      search.counts 'Tutta Bella Neapolitan Pizza', (err, results) ->
+      search.counts 'Moz', (err, results) ->
         should.not.exist err
         results.should.eql
-          web: 569
-          images: 432
-          videos: 252
-          news: 1760
+          web: 325
+          images: 776
+          videos: 145
+          news: 112000
         done()
 
   describe 'web', ->
     it 'should return results', (done) ->
-      search.web 'Tutta Bella Neapolitan Pizza', (err, results) ->
+      search.web 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 50
+        results.length.should.eql 47
         results[0].should.have.properties [
+          'id'
           'title'
           'description'
           'displayUrl'
           'url']
         done()
     it 'should return 100 results', (done) ->
-      search.web 'Tutta Bella Neapolitan Pizza', {top: 100}, (err, results) ->
+      search.web 'Moz', {top: 100}, (err, results) ->
         should.not.exist err
-        results.length.should.eql 100
+        results.length.should.eql 91
         done()
 
   describe 'images', ->
     it 'should return results', (done) ->
-      search.images 'Tutta Bella Neapolitan Pizza', (err, results) ->
+      search.images 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 50
+        results.length.should.eql 43
         results[0].should.have.properties [
+          'id'
           'title'
           'url'
           'sourceUrl'
@@ -78,10 +80,11 @@ describe 'search', ->
 
   describe 'videos', ->
     it 'should return results', (done) ->
-      search.videos 'Tutta Bella Neapolitan Pizza', (err, results) ->
+      search.videos 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 50
+        results.length.should.eql 46
         results[0].should.have.properties [
+          'id'
           'title'
           'url'
           'displayUrl'
@@ -97,10 +100,11 @@ describe 'search', ->
 
   describe 'news', ->
     it 'should return results', (done) ->
-      search.news 'Tutta Bella Neapolitan Pizza', (err, results) ->
+      search.news 'Moz', (err, results) ->
         should.not.exist err
         results.length.should.eql 50
         results[0].should.have.properties [
+          'id'
           'title'
           'source'
           'url'
