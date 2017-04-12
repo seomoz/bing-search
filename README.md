@@ -51,26 +51,32 @@ search.web('Tutta Bella Neapolitan Pizzeria',
 
 Output:
 ```javascript
-[ { title: 'Tutta Bella',
-    description: 'The Northwest’s first certified Neapolitan pizzeria. ... Find out what is happening at your neighborhood Tutta Bella, learn about our partners, ...',
-    displayUrl: 'https://tuttabella.com',
-    url: 'https://www.bing.com/cr?IG=44525DED0AD248D6A4D456FFBA3CAD3D&CID=126EB96154286145212AB300557760BA&rd=1&h=Czc59koUIRW4FD93gPuLRozSc8ADBjCey3bC9afmymI&v=1&r=https%3a%2f%2ftuttabella.com%2f&p=DevEx,5038.1' },
-  { title: 'Tutta Bella Neapolitan Pizzeria - Wallingford - 292 Photos ...',
-    description: 'The inspiration for Tutta Bella Neapolitan Pizzeria stems from a passion for the authentic, fire-roasted pizzas born in Naples and found throughout Italy.',
-    displayUrl: 'https://www.yelp.com/biz/tutta-bella-neapolitan-pizzeria...',
-    url: 'https://www.bing.com/cr?IG=44525DED0AD248D6A4D456FFBA3CAD3D&CID=126EB96154286145212AB300557760BA&rd=1&h=WVzCmMsh9ZG6fiy95mMzywLGS1T7x4iM3mXOVqVo_DQ&v=1&r=https%3a%2f%2fwww.yelp.com%2fbiz%2ftutta-bella-neapolitan-pizzeria-wallingford-seattle&p=DevEx,5060.1' },
-  { title: 'Tutta Bella Neapolitan Pizzeria - Issaquah - 136 Photos ...',
-    description: '320 reviews of Tutta Bella Neapolitan Pizzeria - Issaquah "This is a really good little restaurant. The food here has been consistently good the last few times I\'ve been.',
-    displayUrl: 'https://www.yelp.com/biz/tutta-bella-neapolitan-pizzeria-issaquah...',
-    url: 'https://www.bing.com/cr?IG=44525DED0AD248D6A4D456FFBA3CAD3D&CID=126EB96154286145212AB300557760BA&rd=1&h=MAEKemzKxw-l7bZlWCVELifVeLVxn1ZaK4x11wPhGu0&v=1&r=https%3a%2f%2fwww.yelp.com%2fbiz%2ftutta-bella-neapolitan-pizzeria-issaquah-issaquah-2&p=DevEx,5075.1' },
-  { title: 'Tutta Bella Neapolitan Pizzeria - Home | Facebook',
-    description: 'Tutta Bella Neapolitan Pizzeria. 3,436 likes · 30 talking about this. Tutta Bella Neapolitan Pizzeria is the Northwest\'s first certified authentic...',
-    displayUrl: 'https://www.facebook.com/TuttaBellaNeapolitanPizzeria',
-    url: 'https://www.bing.com/cr?IG=44525DED0AD248D6A4D456FFBA3CAD3D&CID=126EB96154286145212AB300557760BA&rd=1&h=4iDqNf9EuGZ0kxNPo_U6Ysvtf9MFNBTUyWfEohw-aIw&v=1&r=https%3a%2f%2fwww.facebook.com%2fTuttaBellaNeapolitanPizzeria&p=DevEx,5089.1' },
-  { title: 'Tutta Bella Neapolitan Pizzeria - Seattle - Zomato',
-    description: 'Tutta Bella Neapolitan Pizzeria Seattle; Tutta Bella Neapolitan Pizzeria, Fremont; Get Menu, Reviews, Contact, Location, Phone Number, Maps and more for Tutta Bella ...',
-    displayUrl: 'https://www.zomato.com/seattle/tutta-bella-neapolitan-pizzeria-fremont',
-    url: 'https://www.bing.com/cr?IG=44525DED0AD248D6A4D456FFBA3CAD3D&CID=126EB96154286145212AB300557760BA&rd=1&h=37j-6zU-jJqHt0ouy4TqXOasoluj2TCYMhGdfLOxXB4&v=1&r=https%3a%2f%2fwww.zomato.com%2fseattle%2ftutta-bella-neapolitan-pizzeria-fremont&p=DevEx,5107.1' } ]
+[ { id: 'Czc59koUIRW4FD93gPuLRozSc8ADBjCey3bC9afmymI',
+    title: 'Tutta Bella',
+    description: 'We use the finest imported and locally sourced ingredients along with centuries-old, artisan traditions to bring the definitive Neapolitan pizza experience to our guests.',
+    url: 'https://www.bing.com/cr?IG=F46CAFD4DAF240DC8816EF32124582DE&CID=048B2A80E639669909DF20E2E766671C&rd=1&h=Czc59koUIRW4FD93gPuLRozSc8ADBjCey3bC9afmymI&v=1&r=https%3a%2f%2ftuttabella.com%2f&p=DevEx,5039.1',
+    displayUrl: 'https://tuttabella.com' },
+  { id: 'WVzCmMsh9ZG6fiy95mMzywLGS1T7x4iM3mXOVqVo_DQ',
+    title: 'Tutta Bella Neapolitan Pizzeria - Wallingford - 292 Photos ...',
+    description: '591 reviews of Tutta Bella Neapolitan Pizzeria - Wallingford "Tutta Bella is a bit of an institution here in Seattle, and I\'m glad I finally came by to check it out!',
+    url: 'https://www.bing.com/cr?IG=F46CAFD4DAF240DC8816EF32124582DE&CID=048B2A80E639669909DF20E2E766671C&rd=1&h=WVzCmMsh9ZG6fiy95mMzywLGS1T7x4iM3mXOVqVo_DQ&v=1&r=https%3a%2f%2fwww.yelp.com%2fbiz%2ftutta-bella-neapolitan-pizzeria-wallingford-seattle&p=DevEx,5062.1',
+    displayUrl: 'https://www.yelp.com/biz/tutta-bella-neapolitan-pizzeria...' },
+  { id: '4iDqNf9EuGZ0kxNPo_U6Ysvtf9MFNBTUyWfEohw-aIw',
+    title: 'Tutta Bella Neapolitan Pizzeria - Home | Facebook',
+    description: 'Tutta Bella Neapolitan Pizzeria is the Northwest\'s first certified authentic Neapolitan pizzeria. 3,432 people like this and 3,160 people follow this. About See All.',
+    url: 'https://www.bing.com/cr?IG=F46CAFD4DAF240DC8816EF32124582DE&CID=048B2A80E639669909DF20E2E766671C&rd=1&h=4iDqNf9EuGZ0kxNPo_U6Ysvtf9MFNBTUyWfEohw-aIw&v=1&r=https%3a%2f%2fwww.facebook.com%2fTuttaBellaNeapolitanPizzeria&p=DevEx,5076.1',
+    displayUrl: 'https://www.facebook.com/TuttaBellaNeapolitanPizzeria' },
+  { id: 'MAEKemzKxw-l7bZlWCVELifVeLVxn1ZaK4x11wPhGu0',
+    title: 'Tutta Bella Neapolitan Pizzeria - Issaquah - 136 Photos ...',
+    description: '321 reviews of Tutta Bella Neapolitan Pizzeria - Issaquah "This is a really good little restaurant. The food here has been consistently good the last few times I\'ve been.',
+    url: 'https://www.bing.com/cr?IG=F46CAFD4DAF240DC8816EF32124582DE&CID=048B2A80E639669909DF20E2E766671C&rd=1&h=MAEKemzKxw-l7bZlWCVELifVeLVxn1ZaK4x11wPhGu0&v=1&r=https%3a%2f%2fwww.yelp.com%2fbiz%2ftutta-bella-neapolitan-pizzeria-issaquah-issaquah-2&p=DevEx,5092.1',
+    displayUrl: 'https://www.yelp.com/biz/tutta-bella-neapolitan-pizzeria-issaquah...' },
+  { id: 'k4fp-oYp7UsAl2kbopZWnj46jdIkioxitq-B416gb9g',
+    title: 'Tutta Bella Neapolitan Pizzeria, Columbia City, Seattle ...',
+    description: 'Tutta Bella Neapolitan Pizzeria Seattle; Tutta Bella Neapolitan Pizzeria, Columbia City; Get Menu, Reviews, Contact, Location, Phone Number, Maps and more for Tutta ...',
+    url: 'https://www.bing.com/cr?IG=F46CAFD4DAF240DC8816EF32124582DE&CID=048B2A80E639669909DF20E2E766671C&rd=1&h=k4fp-oYp7UsAl2kbopZWnj46jdIkioxitq-B416gb9g&v=1&r=https%3a%2f%2fwww.zomato.com%2fseattle%2ftutta-bella-neapolitan-pizzeria-columbia-city&p=DevEx,5110.1',
+    displayUrl: 'https://www.zomato.com/seattle/tutta-bella-neapolitan-pizzeria...' } ]
+
 ```
 
 ### new Search(accountKey, [parallelLimit], [useGzip])
@@ -191,10 +197,13 @@ TODOs
 Changes
 -------
 
-* 1.0.1
+* 1.0.1 [no longer working]
   * Initial support for all Bing Search API sources
 * 5.0.1
   * Revised support for the new Bing API v5
+  * Upgrade to this version is required, since Bing [retired v2 of their API](
+  https://msdn.microsoft.com/en-us/library/mt707570.aspx) which was used by
+  v1.0.1 of this library.
 
 Upgrading
 ---------
