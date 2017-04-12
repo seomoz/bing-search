@@ -198,7 +198,6 @@ class Search
       callback null, @_extractImageResults data
 
   _extractImageResults: (data) ->
-    # @todo size/type are different
     _.map data.results, (result) ->
       id: result.id
       title: result.name
@@ -210,7 +209,6 @@ class Search
       size: result.contentSize
       type: result.encodingFormat
       thumbnail:
-        # @todo size/type don't exist
         url: result.thumbnailUrl
         width: Number result.thumbnail.width
         height: Number result.thumbnail.height
@@ -226,7 +224,6 @@ class Search
       callback null, @_extractVideoResults data
 
   _extractVideoResults: (data) ->
-    # @todo duration is different
     _.map data.results, (result) ->
       id: result.id
       title: result.name
@@ -234,7 +231,6 @@ class Search
       displayUrl: result.webSearchUrl
       runtime: result.duration
       thumbnail:
-        # @todo size/type don't exist
         url: result.thumbnailUrl
         width: Number result.thumbnail.width
         height: Number result.thumbnail.height
@@ -250,7 +246,6 @@ class Search
       callback null, @_extractNewsResults data
 
   _extractNewsResults: (data) ->
-    # @todo name doesn't exist
     _.map data.results, (result) ->
       id: result.id
       title: result.name
