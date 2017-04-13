@@ -233,5 +233,5 @@ Previously, you were able to search multiple verticals at once and retrieve
 relevant results. Now, a comparable request will return a mixed set of results
 depending on what verticals match best (similar to what a human would expect);
 this isn't useful for our purposes. To keep functionality similar, we must make
-parallel requests for our `count()` and [the not-yet implemented] `composite()`
-methods.
+parallel requests for our `count()` method (and, if we ever implement it, the
+`composite()` method).

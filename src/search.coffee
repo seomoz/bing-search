@@ -14,7 +14,7 @@ class Search
   documentation states that the maximum results is API specific; but, all of
   the API references just state that "the actual number delivered may be less
   than requested." From what I've seen, searches typically return ~30  results;
-  however, impartial result sets occur at any `count > 10`. `25` is a good
+  however, incomplete result sets occur at any `count > 10`. `25` is a good
   number for avoiding holes in data and duplicate results across pages.
   ###
   @PAGE_SIZE = 25
@@ -69,7 +69,7 @@ class Search
       body = body.webPages if body._type is 'SearchResponse'
       return callback 'Invalid HTTP response body.' if not body?
 
-      # Parse an ID out of result URLs.
+      # Parse an ID out of result URLs for compatibility and duplicate checks.
       invalidId = false
       body.value.forEach (result) ->
         matches = (result.url or result.hostPageUrl).match /&h=([^&]+)/
@@ -80,7 +80,6 @@ class Search
         result.id = matches[1]
       return callback 'Unable to parse an ID out of result URL.' if invalidId
 
-      # Return search count and results.
       callback null,
         estimatedCount: body.totalEstimatedMatches
         results: body.value
@@ -105,6 +104,13 @@ class Search
       _.bind(@executeSearch, this), (err, responses) ->
         return callback err if err
 
+        ###
+        This `estimatedCount` is Bing's approximation of the total number of
+        results for a query. This is used for the `counts()` method and does
+        not relate to `results.length` in any way. We chose the last response's
+        `estimatedCount` since this value gets more accurate the higher the
+        search's `offset`.
+        ###
         data =
           estimatedCount: _.last(responses).estimatedCount
           results: []
