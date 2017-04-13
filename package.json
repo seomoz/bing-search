@@ -57,9 +57,7 @@
     "should": "^4.4.1"
   },
   "scripts": {
-    "build": "coffee --bare --compile --output lib src/*.coffee",
-    "prepublish": "coffee --bare --compile --output lib src/*.coffee",
-    "postpublish": "rm -rf lib",
+    "install": "coffee --bare --compile --output lib src/*.coffee",
     "test": "node_modules/.bin/grunt test"
   }
 }
