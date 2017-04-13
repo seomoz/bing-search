@@ -191,7 +191,7 @@ class Search
     @rawWeb query, options, (err, data) =>
       callback err, (@extractWebResults data unless err)
 
-  extractWebResults: ({results} = []) ->
+  extractWebResults: ({results} = {}) ->
     for result in results
       id: result.id
       title: result.name
@@ -207,7 +207,7 @@ class Search
     @rawImages query, options, (err, data) =>
       callback err, (@extractImageResults data unless err)
 
-  extractImageResults: ({results} = []) ->
+  extractImageResults: ({results} = {}) ->
     for result in results
       id: result.id
       title: result.name
@@ -231,7 +231,7 @@ class Search
     @rawVideos query, options, (err, data) =>
       callback err, (@extractVideoResults data unless err)
 
-  extractVideoResults: ({results} = []) ->
+  extractVideoResults: ({results} = {}) ->
     for result in results
       id: result.id
       title: result.name
@@ -251,7 +251,7 @@ class Search
     @rawNews query, options, (err, data) =>
       callback err, (@extractNewsResults data unless err)
 
-  extractNewsResults: ({results} = []) ->
+  extractNewsResults: ({results} = {}) ->
     for result in results
       id: result.id
       title: result.name
