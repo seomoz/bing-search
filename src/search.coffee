@@ -36,7 +36,7 @@ class Search
     # Validate market; send as `mkt`.
     if options.market?
       options.mkt = options.market if option.market in markets
-      options = _.omit options, 'market'
+      delete options.market
 
     options.q = @quote options.q
     options
@@ -91,7 +91,7 @@ class Search
     top = Search.MAX_RESULTS
     if options.top?
       top = Number options.top
-      options = _.omit options, 'top'
+      delete options.top
 
     allRequestOptions = (for offset in [start...top] by Search.PAGE_SIZE
       _.defaults {
