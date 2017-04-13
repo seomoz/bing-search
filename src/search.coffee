@@ -25,6 +25,18 @@ class Search
   ###
   @MAX_RESULTS = 50
 
+  ###
+  We only need to one result (zero is impossible) from most verticals. With
+  a web search, however, the `totalEstimatedMatches` needs to be checked
+  from a higher page for accurate data.
+
+  The 1,000 value comes from empirical data. It seems that after 600
+  results, the accuracy gets quite consistent and accurate. I picked 1,000
+  just to be in the clear. It also doesn't matter if there are fewer than
+  1,000 results.
+  ###
+  @COUNT_ACCURACY_OFFSET = 1000
+
   constructor: (@accountKey, @parallelLimit = 10, @useGzip = true) ->
 
   sanitizeOptions: (options) ->
@@ -48,10 +60,10 @@ class Search
   executeSearch: (options..., callback) ->
     options = options[0] or {}
 
-    uri = "#{BING_SEARCH_ENDPOINT}/search"
-    if options.endpoint?
-      uri = "#{BING_SEARCH_ENDPOINT}/#{options.endpoint}"
-      options = _.omit options, 'endpoint'
+    uri = "#{BING_SEARCH_ENDPOINT}/" +
+      (if options.endpoint then options.endpoint else 'search')
+
+    delete options.endpoint
     qs = @sanitizeOptions options
 
     req = request {
@@ -67,18 +79,18 @@ class Search
 
       # Filtered searches' data lives within the webPages property.
       body = body.webPages if body._type is 'SearchResponse'
-      return callback 'Invalid HTTP response body.' if not body?
+      return callback new Error 'Invalid HTTP response body.' unless body
 
       # Parse an ID out of result URLs for compatibility and duplicate checks.
       invalidId = false
       body.value.forEach (result) ->
         matches = (result.url or result.hostPageUrl).match /&h=([^&]+)/
-        if not matches?
+        if matches
+          result.id = matches[1]
+        else
           invalidId = true
-          return
-
-        result.id = matches[1]
-      return callback 'Unable to parse an ID out of result URL.' if invalidId
+      if invalidId
+        return callback new Error 'Unable to parse an ID out of result URL.'
 
       callback null,
         estimatedCount: body.totalEstimatedMatches
@@ -116,46 +128,35 @@ class Search
           results: []
 
         # Avoid duplicates by checking result IDs.
-        existingIds = []
+        existingIds = {}
         responses.forEach (response) ->
           response.results.forEach (result) ->
-            unless result.id in existingIds
+            unless result.id of existingIds
               data.results.push result
-              existingIds.push result.id
+              existingIds[result.id] = true
 
         callback null, data
 
   counts: (query, options..., callback) ->
-    sources = []
-
-    sources.push
+    sources = [
       key: 'web'
       method: _.bind @rawWeb, this
-    sources.push
+    ,
       key: 'image'
       method: _.bind @rawImages, this
-    sources.push
+    ,
       key: 'video'
       method: _.bind @rawVideos, this
-    sources.push
+    ,
       key: 'news'
       method: _.bind @rawNews, this
+    ]
 
     executeSearchForCounts = (source, callback) ->
-      ###
-      We only need to one result (zero is impossible) from most verticals. With
-      a web search, however, the `totalEstimatedMatches` needs to be checked
-      from a higher page for accurate data.
-      
-      The 1,000 value comes from empirical data. It seems that after 600
-      results, the accuracy gets quite consistent and accurate. I picked 1,000
-      just to be in the clear. It also doesn't matter if there are fewer than
-      1,000 results.
-      ###
       pagination = {offset: 0, top: 1}
       if source.key is 'web'
-        _.each pagination, (value, key) ->
-          pagination[key] += 1000
+        pagination.offset += Search.COUNT_ACCURACY_OFFSET
+        pagination.top += Search.COUNT_ACCURACY_OFFSET
 
       source.method query, _.defaults(pagination, options), callback
 
