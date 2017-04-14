@@ -26,8 +26,13 @@ Getting Started
 Install
 -------
 
+[CoffeeScript](http://coffeescript.org/#installation) is required for compiling
+since we aren't currently publishing this to npm. Then, add this repo to your
+`package.json`.
+
 ```bash
-$ npm install git://github.com/seomoz/bing-search.git --save 
+$ npm install --global coffee-script
+$ npm install --save git://github.com/seomoz/bing-search.git
 ```
 
 Usage
