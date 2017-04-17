@@ -6,234 +6,260 @@ url = require 'url'
 
 markets = require './markets'
 
-BING_SEARCH_ENDPOINT = 'https://api.datamarket.azure.com/Bing/Search'
+BING_SEARCH_ENDPOINT = 'https://api.cognitive.microsoft.com/bing/v5.0'
 
 class Search
-  @SOURCES = ['web', 'image', 'video', 'news', 'spell', 'relatedsearch']
-  @PAGE_SIZE = 50
+  ###
+  The PAGE_SIZE variable is used for `count` on most API requests. The
+  documentation states that the maximum results is API specific; but, all of
+  the API references just state that "the actual number delivered may be less
+  than requested." From what I've seen, searches typically return ~30  results;
+  however, incomplete result sets occur at any `count > 10`. `25` is a good
+  number for avoiding holes in data and duplicate results across pages.
+  ###
+  @PAGE_SIZE = 25
 
-  constructor: (@accountKey, @parallel = 10, @useGzip = true) ->
+  ###
+  The MAX_RESULTS variable, used for the legacy `top` pagination option, allows
+  for us to return the same default `50` results as v1.0.1 of this library.
+  ###
+  @MAX_RESULTS = 50
 
-  requestOptions: (options) ->
-    reqOptions =
-      Query: @quoted options.query
-      $top: options.top or 10
-      $skip: options.skip or 0
+  ###
+  We only need one result (zero is impossible) from most verticals. With a web
+  search, however, the `totalEstimatedMatches` needs to be checked from a higher
+  page for accurate data.
 
-    # Filter out unsupported sources
-    sources = (s for s in options.sources or [] when s in Search.SOURCES)
-    reqOptions.Sources = @quoted sources if sources.length
+  The 1,000 value comes from empirical data. It seems that after 600
+  results, the accuracy gets quite consistent and accurate. I picked 1,000
+  just to be in the clear. It also doesn't matter if there are fewer than
+  1,000 results.
+  ###
+  @COUNT_ACCURACY_OFFSET = 1000
 
-    reqOptions.Market = @quoted(options.market) if options.market in markets
-    reqOptions
+  constructor: (@accountKey, @parallelLimit = 10, @useGzip = true) ->
 
-  # Given a list of strings, generates a string wrapped in single quotes with
-  # the list entries separated by a `+`.
-  quoted: (values) ->
-    values = [values] unless _.isArray values
-    values = (v.replace "'", "''" for v in values)
-    "'#{values.join '+'}'"
+  sanitizeOptions: (options) ->
+    # Default pagination.
+    options = _.defaults options,
+      count: Search.PAGE_SIZE
+      offset: 0
 
-  # Generates a sequence of numbers no larger than the page size which the sum
-  # of the list equal to numResults.
-  generateTops: (numResults, pageSize = Search.PAGE_SIZE) ->
-    tops = [numResults % pageSize] if numResults % pageSize isnt 0
-    tops or= []
-    (pageSize for i in [0...Math.floor(numResults / pageSize)]).concat tops
+    # Validate market; send as `mkt`.
+    if options.market?
+      options.mkt = options.market if option.market in markets
+      delete options.market
 
-  # Generate a sequence of offsets as a multiple of page size starting at
-  # skipStart and ending before skipStart + numResults.
-  generateSkips: (numResults, skipStart) ->
-    skips = [skipStart]
-    for count in @generateTops(numResults)[...-1]
-      skips.push skips[skips.length - 1] + count
-    skips
+    options.q = @quote options.q
+    options
 
-  parallelSearch: (vertical, options, callback) ->
-    opts = _.extend {}, {top: Search.PAGE_SIZE, skip: 0}, options
+  quote: (str) ->
+    str = str.replace '"', '\"' # Escape existing quotes.
+    str.replace /^|$/g, '"'     # Quote entire phrase.
 
-    # Generate search options for each of the search requests.
-    pairs = _.zip @generateTops(opts.top), @generateSkips(opts.top, opts.skip)
-    requestOptions = _.map pairs, ([top, skip]) ->
-      _.defaults {top, skip}, options
+  executeSearch: (options..., callback) ->
+    options = options[0] or {}
 
-    search = (options, callback) =>
-      @search vertical, options, callback
+    uri = "#{BING_SEARCH_ENDPOINT}/" +
+      (if options.endpoint then options.endpoint else 'search')
 
-    async.mapLimit requestOptions, @parallel, search, callback
+    delete options.endpoint
+    qs = @sanitizeOptions options
 
-  search: (vertical, options, callback) ->
-    requestOptions =
-      uri: "#{BING_SEARCH_ENDPOINT}/#{vertical}"
-      qs: _.extend @requestOptions(options),
-        $format: 'json'
-      auth:
-        user: @accountKey
-        pass: @accountKey
+    req = request {
+      uri, qs
+      headers:
+        'Ocp-Apim-Subscription-Key': @accountKey
       json: true
       gzip: @useGzip
-
-    req = request requestOptions, (err, res, body) ->
+    }, (err, res, body) ->
       unless err or res.statusCode is 200
         err or= new Error "Bad Bing API response #{res.statusCode}"
       return callback err if err
 
-      callback null, body
+      # Filtered searches' data lives within the webPages property.
+      body = body.webPages if body._type is 'SearchResponse'
+      return callback new Error 'Invalid HTTP response body.' unless body
+
+      # Parse an ID out of result URLs for compatibility and duplicate checks.
+      invalidId = false
+      body.value.forEach (result) ->
+        matches = (result.url or result.hostPageUrl).match /&h=([^&]+)/
+        if matches
+          result.id = matches[1]
+        else
+          invalidId = true
+      if invalidId
+        return callback _.extend new Error('Unable to parse an ID out of result URL.'),
+          url: result.url or result.hostPageUrl
+
+      callback null,
+        estimatedCount: body.totalEstimatedMatches
+        results: body.value
 
     debug url.format req.uri
 
-  counts: (query, callback) ->
-    getCounts = (options, callback) =>
-      options = _.extend {}, options, {query, sources: Search.SOURCES}
-      @search 'Composite', options, (err, result) =>
+  parallelSearch: (options, callback) ->
+    start = options.offset or 0
+    top = Search.MAX_RESULTS
+    if options.top?
+      top = Number options.top
+      delete options.top
+
+    allRequestOptions = (for offset in [start...top] by Search.PAGE_SIZE
+      _.defaults {
+        count: Math.min Search.PAGE_SIZE, top - offset
+        offset
+      }, options
+    )
+
+    async.mapLimit allRequestOptions, @parallelLimit,
+      _.bind(@executeSearch, this), (err, responses) ->
         return callback err if err
-        callback null, @extractCounts result
 
-    # Two requests are needed. The first request is to get an accurate
-    # web results count and the second request is to get an accurate count
-    # for the rest of the verticals.
-    #
-    # The 1,000 value comes from empirical data. It seems that after 600
-    # results, the accuracy gets quite consistent and accurate. I picked 1,000
-    # just to be in the clear. It also doesn't matter if there are fewer than
-    # 1,000 results.
-    async.map [{skip: 1000}, {}], getCounts, (err, results) ->
-      return callback err if err
-      callback null, _.extend results[1], _.pick(results[0], 'web')
+        ###
+        This `estimatedCount` is Bing's approximation of the total number of
+        results for a query. This is used for the `counts()` method and does
+        not relate to `results.length` in any way. We chose the last response's
+        `estimatedCount` since this value gets more accurate the higher the
+        search's `offset`.
+        ###
+        data =
+          estimatedCount: _.last(responses).estimatedCount
+          results: []
 
-  extractCounts: (result) ->
-    keyRe = /(\w+)Total$/
+        # Avoid duplicates by checking result IDs.
+        existingIds = {}
+        responses.forEach (response) ->
+          response.results.forEach (result) ->
+            unless result.id of existingIds
+              data.results.push result
+              existingIds[result.id] = true
 
-    _.chain(result?.d?.results or [])
-      .first()
-      .pairs()
-      .filter ([key, value]) ->
-        # Eg. WebTotal, ImageTotal, ...
-        keyRe.test key
-      .map ([key, value]) ->
-        # Eg. WebTotal => web
-        key = keyRe.exec(key)[1].toLowerCase()
-        value = Number value
+        callback null, data
 
-        switch key
-          when 'spellingsuggestions' then ['spelling', value]
-          else [key, value]
-      .object()
-      .value()
+  counts: (query, options..., callback) ->
+    sources = [
+      key: 'web'
+      method: _.bind @rawWeb, this
+    ,
+      key: 'image'
+      method: _.bind @rawImages, this
+    ,
+      key: 'video'
+      method: _.bind @rawVideos, this
+    ,
+      key: 'news'
+      method: _.bind @rawNews, this
+    ]
 
-  verticalSearch: (vertical, verticalResultParser, query, options, callback) ->
-    [callback, options] = [options, {}] if _.compact(arguments).length is 4
+    executeSearchForCounts = (source, callback) ->
+      pagination = {offset: 0, top: 1}
+      if source.key is 'web'
+        pagination.offset += Search.COUNT_ACCURACY_OFFSET
+        pagination.top += Search.COUNT_ACCURACY_OFFSET
 
-    @parallelSearch vertical, _.extend({}, options, {query}), (err, result) ->
-      return callback err if err
-      callback null, verticalResultParser result
+      source.method query, _.defaults(pagination, options), callback
 
-  mapResults: (results, fn) ->
-    _.chain(results)
-      .pluck('d')
-      .pluck('results')
-      .flatten()
-      .map fn
-      .value()
+    async.mapLimit sources, @parallelLimit, executeSearchForCounts,
+      (err, responses) ->
+        return callback err if err
 
-  web: (query, options, callback) ->
-    @verticalSearch 'Web', _.bind(@extractWebResults, this), query, options,
-      callback
+        data = {}
+        data[source.key] = 0 for source in sources
 
-  extractWebResults: (results) ->
-    @mapResults results, ({ID, Title, Description, DisplayUrl, Url}) ->
-      id: ID
-      title: Title
-      description: Description
-      displayUrl: DisplayUrl
-      url: Url
+        responses.forEach (response, i) ->
+          data[sources[i].key] = response.estimatedCount
 
-  images: (query, options, callback) ->
-    @verticalSearch 'Image', _.bind(@extractImageResults, this), query, options,
-      callback
+        callback null, data
 
-  extractImageResults: (results) ->
-    @mapResults results, (entry) =>
-      id: entry.ID
-      title: entry.Title
-      url: entry.MediaUrl
-      sourceUrl: entry.SourceUrl
-      displayUrl: entry.DisplayUrl
-      width: Number entry.Width
-      height: Number entry.Height
-      size: Number entry.FileSize
-      type: entry.ContentType
-      thumbnail: @extractThumbnail entry
+  # This modifies the endpoint used for searching to retrieve params specific
+  # to separate verticals (i.e. width/height for images and runtime for videos).
+  verticalSearch: (vertical, q, options, callback) ->
+    options = _.extend {}, options, {q, endpoint: "#{vertical}/search"}
+    @parallelSearch options, callback
 
-  extractThumbnail: ({Thumbnail}) ->
-    url: Thumbnail.MediaUrl
-    type: Thumbnail.ContentType
-    width: Number Thumbnail.Width
-    height: Number Thumbnail.Height
-    size: Number Thumbnail.FileSize
+  # This sends the vertical via the responseFilters query param for methods
+  # which don't have specific verticals (i.e. web, spelling, related).
+  filteredSearch: (responseFilter, q, options, callback) ->
+    options = _.extend {}, options, {q, responseFilter}
+    @parallelSearch options, callback
 
-  videos: (query, options, callback) ->
-    @verticalSearch 'Video', _.bind(@extractVideoResults, this), query, options,
-      callback
+  rawWeb: (query, options, callback) ->
+    @filteredSearch 'webpages', query, options, callback
 
-  extractVideoResults: (results) ->
-    @mapResults results,
-      (entry) =>
-        id: entry.ID
-        title: entry.Title
-        url: entry.MediaUrl
-        displayUrl: entry.DisplayUrl
-        runtime: Number entry.RunTime
-        thumbnail: @extractThumbnail entry
+  web: (query, options..., callback) ->
+    options = options[0] or {}
+    @rawWeb query, options, (err, data) =>
+      callback err, (@extractWebResults data unless err)
 
-  news: (query, options, callback) ->
-    @verticalSearch 'News', _.bind(@extractNewsResults, this), query, options,
-      callback
+  extractWebResults: ({results} = {}) ->
+    for result in results
+      id: result.id
+      title: result.name
+      description: result.snippet
+      url: result.url
+      displayUrl: result.displayUrl
 
-  extractNewsResults: (results) ->
-    @mapResults results, (entry) ->
-      id: entry.ID
-      title: entry.Title
-      source: entry.Source
-      url: entry.Url
-      description: entry.Description
-      date: new Date entry.Date
+  rawImages: (query, options, callback) ->
+    @verticalSearch 'images', query, options, callback
 
-  spelling: (query, options, callback) ->
-    @verticalSearch 'SpellingSuggestions', _.bind(@extractSpellResults, this),
-      query, options, callback
+  images: (query, options..., callback) ->
+    options = options[0] or {}
+    @rawImages query, options, (err, data) =>
+      callback err, (@extractImageResults data unless err)
 
-  extractSpellResults: (results) ->
-    @mapResults results, ({Value}) ->
-      Value
+  extractImageResults: ({results} = {}) ->
+    for result in results
+      id: result.id
+      title: result.name
+      url: result.contentUrl
+      sourceUrl: result.hostPageUrl
+      displayUrl: result.hostPageDisplayUrl
+      width: Number result.width
+      height: Number result.height
+      size: result.contentSize
+      type: result.encodingFormat
+      thumbnail:
+        url: result.thumbnailUrl
+        width: result.thumbnail.width
+        height: result.thumbnail.height
 
-  related: (query, options, callback) ->
-    @verticalSearch 'RelatedSearch', _.bind(@extractRelatedResults, this),
-      query, options, callback
+  rawVideos: (query, options, callback) ->
+    @verticalSearch 'videos', query, options, callback
 
-  extractRelatedResults: (results) ->
-    @mapResults results, ({Title, BingUrl}) ->
-      query: Title
-      url: BingUrl
+  videos: (query, options..., callback) ->
+    options = options[0] or {}
+    @rawVideos query, options, (err, data) =>
+      callback err, (@extractVideoResults data unless err)
 
-  composite: (query, options, callback) ->
-    [callback, options] = [options, {}] if arguments.length is 2
-    options = _.defaults {}, options, {query, sources: Search.SOURCES}
+  extractVideoResults: ({results} = {}) ->
+    for result in results
+      id: result.id
+      title: result.name
+      url: result.contentUrl
+      displayUrl: result.webSearchUrl
+      runtime: result.duration
+      thumbnail:
+        url: result.thumbnailUrl
+        width: result.thumbnail.width
+        height: result.thumbnail.height
 
-    @parallelSearch 'Composite', options, (err, results) =>
-      return callback err if err
+  rawNews: (query, options, callback) ->
+    @verticalSearch 'news', query, options, callback
 
-      convertToSingleSource = (results, source) ->
-        {d: {results: r.d.results[0][source]}} for r in results
+  news: (query, options..., callback) ->
+    options = options[0] or {}
+    @rawNews query, options, (err, data) =>
+      callback err, (@extractNewsResults data unless err)
 
-      callback null,
-        web: @extractWebResults convertToSingleSource results, 'Web'
-        images: @extractImageResults convertToSingleSource results, 'Image'
-        videos: @extractVideoResults convertToSingleSource results, 'Video'
-        news: @extractNewsResults convertToSingleSource results, 'News'
-        spelling: @extractSpellResults convertToSingleSource results,
-          'SpellingSuggestions'
-        related: @extractRelatedResults convertToSingleSource results,
-          'RelatedSearch'
+  extractNewsResults: ({results} = {}) ->
+    for result in results
+      id: result.id
+      title: result.name
+      source: result.provider
+      url: result.url
+      description: result.description
+      date: new Date result.datePublished
 
 module.exports = Search

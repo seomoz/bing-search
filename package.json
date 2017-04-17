@@ -1,11 +1,11 @@
 {
   "name": "bing.search",
-  "version": "1.0.1",
+  "version": "5.0.1",
   "description": "NodeJS Bing Search client",
   "main": "lib/search.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dudleycarr/bing-search.git"
+    "url": "https://github.com/seomoz/bing-search.git"
   },
   "keywords": [
     "Bing",
@@ -18,10 +18,20 @@
     "Video Search",
     "News Search"
   ],
-  "author": {
-    "name": "Dudley Carr",
-    "email": "dudley.carr@gmail.com"
-  },
+  "authors": [
+    {
+      "name": "Dudley Carr",
+      "email": "dudley.carr@gmail.com"
+    },
+    {
+      "name": "David Weiser",
+      "email": "davidann@moz.com"
+    },
+    {
+      "name": "Sam Sullivan",
+      "email": "sams@moz.com"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/dudleycarr/bing-search/issues"
@@ -47,9 +57,7 @@
     "should": "^4.4.1"
   },
   "scripts": {
-    "build": "coffee --bare --compile --output lib src/*.coffee",
-    "prepublish": "coffee --bare --compile --output lib src/*.coffee",
-    "postpublish": "rm -rf lib",
+    "install": "coffee --bare --compile --output lib src/*.coffee",
     "test": "node_modules/.bin/grunt test"
   }
 }
