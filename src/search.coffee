@@ -26,9 +26,9 @@ class Search
   @MAX_RESULTS = 50
 
   ###
-  We only need to one result (zero is impossible) from most verticals. With
-  a web search, however, the `totalEstimatedMatches` needs to be checked
-  from a higher page for accurate data.
+  We only need one result (zero is impossible) from most verticals. With a web
+  search, however, the `totalEstimatedMatches` needs to be checked from a higher
+  page for accurate data.
 
   The 1,000 value comes from empirical data. It seems that after 600
   results, the accuracy gets quite consistent and accurate. I picked 1,000
@@ -55,7 +55,7 @@ class Search
 
   quote: (str) ->
     str = str.replace '"', '\"' # Escape existing quotes.
-    str.replace /^|$/g, '"'      # Quote entire phrase.
+    str.replace /^|$/g, '"'     # Quote entire phrase.
 
   executeSearch: (options..., callback) ->
     options = options[0] or {}
