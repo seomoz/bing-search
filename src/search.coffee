@@ -53,9 +53,9 @@ class Search
     options.q = @quote options.q
     options
 
+  # Quotes the phrase, unless deeper phrases already exist.
   quote: (str) ->
-    str = str.replace '"', '\"' # Escape existing quotes.
-    str.replace /^|$/g, '"'     # Quote entire phrase.
+    unless '"' in str then '"' + str + '"' else str
 
   executeSearch: (options..., callback) ->
     options = options[0] or {}
