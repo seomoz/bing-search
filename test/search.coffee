@@ -29,8 +29,8 @@ describe 'search', ->
     it 'should put a phrase in quotes', (done) ->
       search.quote('Moz').should.eql '"Moz"'
       done()
-    it 'should escape quotes within phrases', (done) ->
-      search.quote('"Moz"').should.eql '"\"Moz\""'
+    it 'should not change pre-quoted phrases', (done) ->
+      search.quote('"Moz"').should.eql '"Moz"'
       done()
 
   describe 'counts', ->
