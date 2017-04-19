@@ -33,12 +33,7 @@ describe 'search', ->
       search.sanitizeQuery('"Moz"').should.eql '"Moz"'
       done()
     it 'should normalize crazy whitespace', (done) ->
-      input = """
-A
-
-B     C
-"""
-      search.sanitizeQuery(input).should.eql '"A B C"'
+      search.sanitizeQuery(decodeURIComponent 'A%0AB%20%20%20C').should.eql '"A B C"'
       done()
 
   describe 'counts', ->

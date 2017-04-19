@@ -55,7 +55,7 @@ class Search
 
   # Normalize whitespace and then quote phrases.
   sanitizeQuery: (query) ->
-    query = query.replace /\s{2,}|\v/g, ' '
+    query = query.replace /\s{2,}|[\v\r\n]+/g, ' '
     unless '"' in query then '"' + query + '"' else query
 
   executeSearch: (options..., callback) ->
