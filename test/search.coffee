@@ -25,12 +25,20 @@ describe 'search', ->
       out = JSON.stringify nock.recorder.play(), null, 2
       fs.writeFileSync RECORDED_FILE, out
 
-  describe 'quote', ->
+  describe 'sanitizeQuery', ->
     it 'should put a phrase in quotes', (done) ->
-      search.quote('Moz').should.eql '"Moz"'
+      search.sanitizeQuery('Moz').should.eql '"Moz"'
       done()
     it 'should not change pre-quoted phrases', (done) ->
-      search.quote('"Moz"').should.eql '"Moz"'
+      search.sanitizeQuery('"Moz"').should.eql '"Moz"'
+      done()
+    it 'should normalize crazy whitespace', (done) ->
+      input = """
+A
+
+B     C
+"""
+      search.sanitizeQuery(input).should.eql '"A B C"'
       done()
 
   describe 'counts', ->
