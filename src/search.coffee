@@ -50,12 +50,13 @@ class Search
       options.mkt = options.market if option.market in markets
       delete options.market
 
-    options.q = @quote options.q
+    options.q = @sanitizeQuery options.q
     options
 
-  quote: (str) ->
-    str = str.replace '"', '\"' # Escape existing quotes.
-    str.replace /^|$/g, '"'     # Quote entire phrase.
+  # Normalize whitespace and then quote phrases.
+  sanitizeQuery: (query) ->
+    query = query.replace /\s{2,}|[\r\n]+/g, ' '
+    unless '"' in query then '"' + query + '"' else query
 
   executeSearch: (options..., callback) ->
     options = options[0] or {}

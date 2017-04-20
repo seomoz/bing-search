@@ -209,6 +209,9 @@ Changes
   * Upgrade to this version is required, since Bing [retired v2 of their API](
   https://msdn.microsoft.com/en-us/library/mt707570.aspx) which was used by
   v1.0.1 of this library.
+* 5.0.2
+  * Normalize whitespace in query strings and don't quote already quoted
+  pharses.
 
 Upgrading
 ---------
