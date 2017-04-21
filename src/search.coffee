@@ -172,11 +172,8 @@ class Search
         return callback err if err
 
         data = {}
-        data[source.key] = 0 for source in sources
-
         responses.forEach (response, i) ->
-          data[sources[i].key] = response.estimatedCount
-
+          data[sources[i].key] = response.estimatedCount or 0
         callback null, data
 
   # This modifies the endpoint used for searching to retrieve params specific
