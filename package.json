@@ -1,6 +1,6 @@
 {
   "name": "bing.search",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "NodeJS Bing Search client",
   "main": "lib/search.js",
   "repository": {
