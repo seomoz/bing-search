@@ -125,7 +125,7 @@ describe 'search', ->
         ]
         done()
 
-  describe.only 'empty responses', ->
+  describe 'empty responses', ->
     it 'should not fail for web searches', (done) ->
       search.web '+"h>RL?gIg2U>0;m`/Q;Fhk67=!Pv184"', (err, results) ->
         should.not.exist err
