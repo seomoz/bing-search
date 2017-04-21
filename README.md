@@ -212,6 +212,8 @@ Changes
 * 5.0.2
   * Normalize whitespace in query strings and don't quote already quoted
   pharses.
+* 5.0.3
+  * Don't throw errors on empty responses.
 
 Upgrading
 ---------
