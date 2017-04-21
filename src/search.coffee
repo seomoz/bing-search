@@ -96,8 +96,9 @@ class Search
         else
           invalidId = true
       if invalidId
-        return callback _.extend new Error('Unable to parse an ID out of result URL.'),
+        err = _.extend new Error('Unable to parse an ID out of result URL.'),
           url: result.url or result.hostPageUrl
+        return callback err
 
       callback null,
         estimatedCount: body.totalEstimatedMatches
