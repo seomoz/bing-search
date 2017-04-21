@@ -8189,5 +8189,193 @@
       "x-content-type-options": "nosniff",
       "date": "Wed, 12 Apr 2017 20:03:07 GMT"
     }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/search?count=25&offset=0&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22&responseFilter=webpages",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "SearchResponse",
+      "rankingResponse": {}
+    },
+    "headers": {
+      "cache-control": "private, max-age=0",
+      "content-length": "50",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "Fri, 21 Apr 2017 16:55:55 GMT",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "9F654D1C30FD44A094850AC4E3042B0A",
+      "x-msedge-clientid": "1832B7B147016E642127BDDA46916F45",
+      "x-msapi-userstate": "21eb",
+      "bingapis-market": "en-US",
+      "x-msedge-ref": "Ref A: 9F654D1C30FD44A094850AC4E3042B0A Ref B: BL2EDGE0422 Ref C: Fri Apr 21 09:56:55 2017 PST",
+      "apim-request-id": "3fd234d8-98f6-429d-98db-6458bb748dc6",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:56 GMT"
+    }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/search?count=25&offset=25&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22&responseFilter=webpages",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "SearchResponse",
+      "rankingResponse": {}
+    },
+    "headers": {
+      "cache-control": "private, max-age=0",
+      "content-length": "50",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "Fri, 21 Apr 2017 16:55:56 GMT",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "56FE464352BB474585DA213729995810",
+      "x-msedge-clientid": "2AAAFF6716BF63780678F50C172F6297",
+      "x-msapi-userstate": "fabc",
+      "bingapis-market": "en-US",
+      "x-msedge-ref": "Ref A: 56FE464352BB474585DA213729995810 Ref B: BL2EDGE0422 Ref C: Fri Apr 21 09:56:56 2017 PST",
+      "apim-request-id": "e9c05e69-c1a4-4871-b01d-e3e0279803ae",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:58 GMT"
+    }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/search?count=1&offset=1000&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22&responseFilter=webpages",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "SearchResponse",
+      "rankingResponse": {}
+    },
+    "headers": {
+      "cache-control": "private, max-age=0",
+      "content-length": "50",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "Fri, 21 Apr 2017 16:55:56 GMT",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "94EABD63610C4867B2E3C2E7A8FB48AF",
+      "x-msedge-clientid": "1643B8FC5443610F0B66B29755D36052",
+      "x-msapi-userstate": "1a0e",
+      "bingapis-market": "en-US",
+      "x-msedge-ref": "Ref A: 94EABD63610C4867B2E3C2E7A8FB48AF Ref B: BL2EDGE0715 Ref C: Fri Apr 21 09:56:57 2017 PST",
+      "apim-request-id": "797161f6-7e0d-4de3-be46-da634aa0289d",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:56 GMT"
+    }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/images/search?count=1&offset=0&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "Images",
+      "instrumentation": {
+        "pageLoadPingUrl": "https://www.bingapis.com/api/ping/pageload?IG=4A98876E538F4AFE85C2028B2A02DEDD&CID=2780B4408DF063861093BE2B8C6062D4&Type=Event.CPT&DATA=0"
+      },
+      "value": [],
+      "pivotSuggestions": [
+        {
+          "pivot": "+\"h>RL?gIg2U>0;m`/Q;Fhk67=!Pv184\"",
+          "suggestions": []
+        }
+      ],
+      "displayShoppingSourcesBadges": false,
+      "displayRecipeSourcesBadges": true
+    },
+    "headers": {
+      "cache-control": "no-cache, no-store, must-revalidate",
+      "pragma": "no-cache",
+      "content-length": "385",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "-1",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "C72DA159C4C34EDD894D0E6305395DE4",
+      "x-msedge-clientid": "2780B4408DF063861093BE2B8C6062D4",
+      "x-msapi-userstate": "c6c7",
+      "x-msedge-ref": "Ref A: C72DA159C4C34EDD894D0E6305395DE4 Ref B: BL2EDGE0707 Ref C: Fri Apr 21 09:56:57 2017 PST",
+      "apim-request-id": "4223eeae-96ff-425d-9aa9-b2dd43a18f57",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:56 GMT"
+    }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/videos/search?count=1&offset=0&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "Videos",
+      "instrumentation": {
+        "pageLoadPingUrl": "https://www.bingapis.com/api/ping/pageload?IG=8431043ABF1648DFBEA872048EE88A91&CID=220CD1B41E426B4B08E6DBDF1FD26AAF&Type=Event.CPT&DATA=0"
+      },
+      "value": [],
+      "pivotSuggestions": [
+        {
+          "pivot": "+\"h>RL?gIg2U>0;m`/Q;Fhk67=!Pv184\"",
+          "suggestions": []
+        }
+      ]
+    },
+    "headers": {
+      "cache-control": "no-cache, no-store, must-revalidate",
+      "pragma": "no-cache",
+      "content-length": "310",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "-1",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "C0275BB010E343BAAB009947B42A9B1C",
+      "x-msedge-clientid": "220CD1B41E426B4B08E6DBDF1FD26AAF",
+      "x-msapi-userstate": "ec30",
+      "x-msedge-ref": "Ref A: C0275BB010E343BAAB009947B42A9B1C Ref B: BL2EDGE0306 Ref C: Fri Apr 21 09:56:57 2017 PST",
+      "apim-request-id": "ff60d097-1e19-4aa5-bf9f-f8df6f8854b1",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:56 GMT"
+    }
+  },
+  {
+    "scope": "https://api.cognitive.microsoft.com:443",
+    "method": "GET",
+    "path": "/bing/v5.0/news/search?count=1&offset=0&q=%2B%22h%3ERL%3FgIg2U%3E0%3Bm%60%2FQ%3BFhk67%3D%21Pv184%22",
+    "body": "",
+    "status": 200,
+    "response": {
+      "_type": "News",
+      "value": []
+    },
+    "headers": {
+      "cache-control": "private, max-age=0",
+      "content-length": "30",
+      "content-type": "application/json; charset=utf-8",
+      "expires": "Fri, 21 Apr 2017 16:55:59 GMT",
+      "vary": "Accept-Encoding",
+      "p3p": "CP=\"NON UNI COM NAV STA LOC CURa DEVa PSAa PSDa OUR IND\"",
+      "bingapis-traceid": "97399732343F492BB7DAF3ECED19BD85",
+      "x-msedge-clientid": "04F416A1DA9567E6050A1CCADB056697",
+      "x-msapi-userstate": "b9c3",
+      "bingapis-market": "en-US",
+      "x-msedge-ref": "Ref A: 97399732343F492BB7DAF3ECED19BD85 Ref B: BL2EDGE1014 Ref C: Fri Apr 21 09:56:59 2017 PST",
+      "apim-request-id": "023654f9-e6f8-48de-b366-7f4ce8e25f48",
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-content-type-options": "nosniff",
+      "date": "Fri, 21 Apr 2017 16:56:59 GMT"
+    }
   }
 ]

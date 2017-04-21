@@ -124,3 +124,20 @@ describe 'search', ->
           'date'
         ]
         done()
+
+  describe 'empty responses', ->
+    it 'should not fail for web searches', (done) ->
+      search.web '+"h>RL?gIg2U>0;m`/Q;Fhk67=!Pv184"', (err, results) ->
+        should.not.exist err
+        results.length.should.eql 0
+        done()
+
+    it 'should not fail for counts', (done) ->
+      search.counts '+"h>RL?gIg2U>0;m`/Q;Fhk67=!Pv184"', (err, results) ->
+        should.not.exist err
+        results.should.eql
+          web: 0
+          image: 0
+          video: 0
+          news: 0
+        done()

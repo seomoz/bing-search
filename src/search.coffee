@@ -80,7 +80,12 @@ class Search
 
       # Filtered searches' data lives within the webPages property.
       body = body.webPages if body._type is 'SearchResponse'
-      return callback new Error 'Invalid HTTP response body.' unless body
+
+      # Empty responses can cause errors, and should be returned right away.
+      unless body
+        return callback null,
+          estimatedCount: 0
+          results: []
 
       # Parse an ID out of result URLs for compatibility and duplicate checks.
       invalidId = false
@@ -167,11 +172,8 @@ class Search
         return callback err if err
 
         data = {}
-        data[source.key] = 0 for source in sources
-
         responses.forEach (response, i) ->
-          data[sources[i].key] = response.estimatedCount
-
+          data[sources[i].key] = response.estimatedCount or 0
         callback null, data
 
   # This modifies the endpoint used for searching to retrieve params specific
