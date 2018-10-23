@@ -81,28 +81,9 @@ class Search
       # Filtered searches' data lives within the webPages property.
       body = body.webPages if body._type is 'SearchResponse'
 
-      # Empty responses can cause errors, and should be returned right away.
-      unless body
-        return callback null,
-          estimatedCount: 0
-          results: []
-
-      # Parse an ID out of result URLs for compatibility and duplicate checks.
-      invalidId = false
-      body.value.forEach (result) ->
-        matches = (result.url or result.hostPageUrl).match /&h=([^&]+)/
-        if matches
-          result.id = matches[1]
-        else
-          invalidId = true
-      if invalidId
-        err = _.extend new Error('Unable to parse an ID out of result URL.'),
-          url: result.url or result.hostPageUrl
-        return callback err
-
       callback null,
-        estimatedCount: body.totalEstimatedMatches
-        results: body.value
+        estimatedCount: body?.totalEstimatedMatches or 0
+        results: body?.value or []
 
     debug url.format req.uri
 
@@ -135,13 +116,13 @@ class Search
           estimatedCount: _.last(responses).estimatedCount
           results: []
 
-        # Avoid duplicates by checking result IDs.
-        existingIds = {}
+        # Avoid duplicates by checking URLs.
+        existingUrls = {}
         responses.forEach (response) ->
           response.results.forEach (result) ->
-            unless result.id of existingIds
+            unless result.url of existingUrls
               data.results.push result
-              existingIds[result.id] = true
+              existingUrls[result.url] = true
 
         callback null, data
 
@@ -199,7 +180,7 @@ class Search
 
   extractWebResults: ({results} = {}) ->
     for result in results
-      id: result.id
+      id: result.id # not useful, but left for backwards compatibility
       title: result.name
       description: result.snippet
       url: result.url
