@@ -81,28 +81,9 @@ class Search
       # Filtered searches' data lives within the webPages property.
       body = body.webPages if body._type is 'SearchResponse'
 
-      # Empty responses can cause errors, and should be returned right away.
-      unless body
-        return callback null,
-          estimatedCount: 0
-          results: []
-
-      # Parse an ID out of result URLs for compatibility and duplicate checks.
-      invalidId = false
-      body.value.forEach (result) ->
-        matches = (result.url or result.hostPageUrl).match /&h=([^&]+)/
-        if matches
-          result.id = matches[1]
-        else
-          invalidId = true
-      if invalidId
-        err = _.extend new Error('Unable to parse an ID out of result URL.'),
-          url: result.url or result.hostPageUrl
-        return callback err
-
       callback null,
-        estimatedCount: body.totalEstimatedMatches
-        results: body.value
+        estimatedCount: body?.totalEstimatedMatches or 0
+        results: body?.value or []
 
     debug url.format req.uri
 
@@ -125,25 +106,27 @@ class Search
         return callback err if err
 
         ###
-        This `estimatedCount` is Bing's approximation of the total number of
-        results for a query. This is used for the `counts()` method and does
-        not relate to `results.length` in any way. We chose the last response's
-        `estimatedCount` since this value gets more accurate the higher the
-        search's `offset`.
+        This is Bing's approximation of the total number of results for a query.
+        It is used for the `counts()` method and does not relate to the length
+        of `results` in any way. We chose the last response's `estimatedCount`
+        since this value gets more accurate the higher the search's `offset`.
         ###
-        data =
-          estimatedCount: _.last(responses).estimatedCount
-          results: []
+        estimatedCount = _.last(responses).estimatedCount
 
-        # Avoid duplicates by checking result IDs.
-        existingIds = {}
-        responses.forEach (response) ->
-          response.results.forEach (result) ->
-            unless result.id of existingIds
-              data.results.push result
-              existingIds[result.id] = true
+        ###
+        This is where the results from parallel searches are combined into one
+        large array. Uniqueness is ensured because Bing can return duplicate
+        results across pages.
+        ###
+        results = _.chain responses
+          .pluck 'results'
+          .flatten()
+          .uniq false, ({url, contentUrl}) ->
+            # contentUrl is used for images/videos
+            url or contentUrl
+          .value()
 
-        callback null, data
+        callback null, {estimatedCount, results}
 
   counts: (query, options..., callback) ->
     sources = [
@@ -199,7 +182,7 @@ class Search
 
   extractWebResults: ({results} = {}) ->
     for result in results
-      id: result.id
+      id: result.id # not useful, but left for backwards compatibility
       title: result.name
       description: result.snippet
       url: result.url

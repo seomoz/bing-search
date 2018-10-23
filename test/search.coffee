@@ -42,17 +42,17 @@ describe 'search', ->
       search.counts 'Moz', (err, results) ->
         should.not.exist err
         results.should.eql
-          web: 325
-          image: 776
-          video: 145
-          news: 112000
+          web: 706
+          image: 128
+          video: 126
+          news: 296000
         done()
 
   describe 'web', ->
     it 'should return results', (done) ->
       search.web 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 47
+        results.length.should.eql 46
         results[0].should.have.properties [
           'id'
           'title'
@@ -64,14 +64,14 @@ describe 'search', ->
     it 'should return 100 results', (done) ->
       search.web 'Moz', {top: 100}, (err, results) ->
         should.not.exist err
-        results.length.should.eql 91
+        results.length.should.eql 94
         done()
 
   describe 'images', ->
     it 'should return results', (done) ->
       search.images 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 43
+        results.length.should.eql 46
         results[0].should.have.properties [
           'id'
           'title'
@@ -95,7 +95,7 @@ describe 'search', ->
     it 'should return results', (done) ->
       search.videos 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 46
+        results.length.should.eql 34
         results[0].should.have.properties [
           'id'
           'title'
@@ -115,7 +115,7 @@ describe 'search', ->
     it 'should return results', (done) ->
       search.news 'Moz', (err, results) ->
         should.not.exist err
-        results.length.should.eql 50
+        results.length.should.eql 36
         results[0].should.have.properties [
           'id'
           'title'
