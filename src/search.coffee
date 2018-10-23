@@ -114,15 +114,12 @@ class Search
         ###
         data =
           estimatedCount: _.last(responses).estimatedCount
-          results: []
-
-        # Avoid duplicates by checking URLs.
-        existingUrls = {}
-        responses.forEach (response) ->
-          response.results.forEach (result) ->
-            unless result.url of existingUrls
-              data.results.push result
-              existingUrls[result.url] = true
+          results: _.chain responses
+            .pluck 'results'
+            .flatten()
+            .uniq false, ({url, contentUrl}) ->
+              url or contentUrl
+            .value()
 
         callback null, data
 
