@@ -106,22 +106,27 @@ class Search
         return callback err if err
 
         ###
-        This `estimatedCount` is Bing's approximation of the total number of
-        results for a query. This is used for the `counts()` method and does
-        not relate to `results.length` in any way. We chose the last response's
-        `estimatedCount` since this value gets more accurate the higher the
-        search's `offset`.
+        This is Bing's approximation of the total number of results for a query.
+        It is used for the `counts()` method and does not relate to the length
+        of `results` in any way. We chose the last response's `estimatedCount`
+        since this value gets more accurate the higher the search's `offset`.
         ###
-        data =
-          estimatedCount: _.last(responses).estimatedCount
-          results: _.chain responses
-            .pluck 'results'
-            .flatten()
-            .uniq false, ({url, contentUrl}) ->
-              url or contentUrl
-            .value()
+        estimatedCount = _.last(responses).estimatedCount
 
-        callback null, data
+        ###
+        This is where the results from parallel searches are combined into one
+        large array. Uniqueness is ensured because Bing can return duplicate
+        results across pages.
+        ###
+        results = _.chain responses
+          .pluck 'results'
+          .flatten()
+          .uniq false, ({url, contentUrl}) ->
+            # contentUrl is used for images/videos
+            url or contentUrl
+          .value()
+
+        callback null, {estimatedCount, results}
 
   counts: (query, options..., callback) ->
     sources = [
